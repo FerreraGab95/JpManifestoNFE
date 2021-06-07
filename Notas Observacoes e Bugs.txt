@@ -1,0 +1,11 @@
+﻿----------------JpManifestoNFe----------------
+A biblioteca de manifesto realiza diversas operações relacionadas à consulta de notas fiscais
+emitidas para o CNPJ da empresa selecionada e manifestação destas mesmas notas. Através de seriços conectados
+as operações são realizadas atráves do envio de um arquivo XML criado e validado, localmente pelo schema do seu tipo,
+cada operação possui um Schema Xml próprio, que pode ser atualizado pela Sefaz. Caso a validação seja bem sucedida, 
+a operação retornará outro arquivo Xml de resposta. Para simplificar tais operações, foi criado um arquivo contendo
+todas as classes utilizadas pelo serviço, que permitem novas instâncias das requisições de serviço programaticamente, 
+e que são facilmente serializáveis para Xml, devido a ter se originado deste, para validação. As respostas dos serviços também
+já se encontram em instâncias dos tipos declarados.
+
+
