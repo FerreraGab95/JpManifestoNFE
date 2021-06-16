@@ -10,25 +10,48 @@ namespace JpManifestoNFE
 {
     public class SefazWebService
     {
-        protected readonly ISchemaFactory schemaFactory;
+        protected readonly SchemaManager schemaManager;
 
+        /// <summary>
+        /// Namescpace padrão dos XMls dos WebServices;
+        /// </summary>
         protected const string defaultNamespace = "http://www.portalfiscal.inf.br/nfe";
 
+
+        /// <summary>
+        /// Certificado do cliente;
+        /// </summary>
         protected X509Certificate2 clientCertificate;
 
+
+        /// <summary>
+        /// Binding com as definições da conexão com o WebService;
+        /// </summary>
         protected BasicHttpBinding basicHttpBinding;
 
-        public SefazWebService(X509Certificate2 clientCertificate, ISchemaFactory schemaFactory) 
+        public SefazWebService(X509Certificate2 clientCertificate, SchemaManager schemaFactory) 
         {
-            this.schemaFactory = schemaFactory;
+            this.schemaManager = schemaFactory;
             this.clientCertificate = clientCertificate;
 
             basicHttpBinding = new BasicHttpBinding();
             basicHttpBinding.Security.Mode = BasicHttpSecurityMode.Transport;
             basicHttpBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
+            /*
+            O tamanho padrão das mensagens de retorno é de 65536 bytes, que é insuficiente para alguns tipos de serviços
+            como o de Distribuição de DFe, que pode conter um grande número de caracteres dependendo do tipo de pesquisa feita,
+            por isso, foi atríbuido o dobro do valor padrão. 
+            */
+            basicHttpBinding.MaxReceivedMessageSize *= 2;
         }
 
 
+        /// <summary>
+        /// Serializa um objeto de tipo presente em XsdClasses para um XmlDocument;
+        /// </summary>
+        /// <param name="toXmlDoc"></param>
+        /// <param name="objType"></param>
+        /// <returns></returns>
         protected XmlDocument ParseToXmlDocument(object toXmlDoc, Type objType)
         {
             XmlSerializer xmlSerializer = new XmlSerializer(objType, defaultNamespace);
@@ -60,7 +83,14 @@ namespace JpManifestoNFE
         }
 
 
-        protected object ParseFromXml(XmlNode responseNode, Type typeToConvert)
+
+        /// <summary>
+        /// Deserializa um nó Xml para uma instância de um objeto de tipo especificado em XsdClasses;
+        /// </summary>
+        /// <param name="responseNode"></param>
+        /// <param name="typeToConvert"></param>
+        /// <returns></returns>
+        protected T ParseFromXml<T>(XmlNode responseNode, Type typeToConvert)
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeToConvert);
 
@@ -71,16 +101,21 @@ namespace JpManifestoNFE
             using (var sReader = new StringReader(responseNode.OuterXml))
             {
                 var des = xmlSerializer.Deserialize(sReader);
-                return des;
+                return (T)des;
             }
         }
 
 
-        protected void ValidateXmlFromSchema(XmlDocument doc, SchemasNFe nfeSchema) 
+        /// <summary>
+        /// Verifica se o documento Xml está de acordo com os parâmetros definidos no schema;
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="schemas"></param>
+        protected void ValidateXmlFromSchema(XmlDocument doc, params WebServiceSchemas[] schemas) 
         {
             string exMessage = string.Empty;
            
-            doc.Schemas.Add(schemaFactory.GetSchemas(defaultNamespace, nfeSchema));
+            doc.Schemas.Add(schemaManager.GetSchemas(defaultNamespace, schemas));
 
             doc.Validate((e, s) =>
             {
@@ -90,7 +125,7 @@ namespace JpManifestoNFE
 
             if (!string.IsNullOrEmpty(exMessage)) 
             {
-                throw new XmlSchemaValidationException($"{Resource.xsdSchemaValidationError}\n{exMessage}");
+                throw new XmlSchemaValidationException($"{ErrorMsgs.XSD_FILE_NOT_FOUND}\n{exMessage}");
             }
         }
     }

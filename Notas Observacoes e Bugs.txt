@@ -9,3 +9,10 @@ e que são facilmente serializáveis para Xml, devido a ter se originado deste, 
 já se encontram em instâncias dos tipos declarados.
 
 
+------------Tipos retornados da Distribuição DFe--------------------
+resNFe
+procNFe
+
+
+
+
