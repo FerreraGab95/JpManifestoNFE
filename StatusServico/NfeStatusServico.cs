@@ -56,7 +56,7 @@ namespace JpManifestoNFE.StatusServico
         /// <returns></returns>
         public async Task<TRetConsStatServ> GetStatusService()
         {
-            var client = new NFeStatusServico4SoapClient(basicHttpBinding, new EndpointAddress(webServiceUri));
+            var client = new NFeStatusServico4SoapClient(webServiceBinding, new EndpointAddress(webServiceUri));
 
             client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
             

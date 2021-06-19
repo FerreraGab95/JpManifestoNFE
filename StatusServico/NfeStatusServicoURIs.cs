@@ -35,7 +35,7 @@ namespace JpManifestoNFE.StatusServico
                 case TCodUfIBGE.Pernambuco:
                     return "https://nfe.sefaz.pe.gov.br/nfe-service/services/NFeStatusServico4";
                 case TCodUfIBGE.Paraná:
-                    return "https://nfe.sefaz.pr.gov.br/nfe/NFeStatusServico4?wsdl";
+                    return "https://nfe.sefa.pr.gov.br/nfe/NFeStatusServico4?wsdl";
                 case TCodUfIBGE.Rio_Grande_do_Sul:
                     return "https://nfe.sefazrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx";
                 case TCodUfIBGE.São_Paulo:

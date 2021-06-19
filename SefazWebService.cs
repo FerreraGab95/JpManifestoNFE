@@ -2,6 +2,8 @@
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
+using System.Text;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
@@ -15,7 +17,7 @@ namespace JpManifestoNFE
         /// <summary>
         /// Namescpace padrão dos XMls dos WebServices;
         /// </summary>
-        protected const string defaultNamespace = "http://www.portalfiscal.inf.br/nfe";
+        public const string DEFAULT_NAMESPACE = "http://www.portalfiscal.inf.br/nfe";
 
 
         /// <summary>
@@ -27,22 +29,36 @@ namespace JpManifestoNFE
         /// <summary>
         /// Binding com as definições da conexão com o WebService;
         /// </summary>
-        protected BasicHttpBinding basicHttpBinding;
+        protected CustomBinding webServiceBinding;
 
         public SefazWebService(X509Certificate2 clientCertificate, SchemaManager schemaFactory) 
         {
             this.schemaManager = schemaFactory;
             this.clientCertificate = clientCertificate;
 
-            basicHttpBinding = new BasicHttpBinding();
-            basicHttpBinding.Security.Mode = BasicHttpSecurityMode.Transport;
-            basicHttpBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
+            var basicBinding = new BasicHttpBinding();
+            basicBinding.Security.Mode = BasicHttpSecurityMode.Transport;
+            basicBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
+            basicBinding.TextEncoding = Encoding.Default;
             /*
             O tamanho padrão das mensagens de retorno é de 65536 bytes, que é insuficiente para alguns tipos de serviços
             como o de Distribuição de DFe, que pode conter um grande número de caracteres dependendo do tipo de pesquisa feita,
             por isso, foi atríbuido o dobro do valor padrão. 
             */
-            basicHttpBinding.MaxReceivedMessageSize *= 2;
+            basicBinding.MaxReceivedMessageSize *= 10;
+
+
+            //webServiceBinding é uma bind customizada para utilizar o Soap 1.2 ao invés do Soap 1.1 que é padrão do HttpBinding
+            //permitindo assim uma compatibilidade maior com WebServices de estados diferentes;
+            //Solução desenvolvida por (Nicolas Giannone)https://stackoverflow.com/users/10662490/nicolas-giannone
+            webServiceBinding = new CustomBinding(basicBinding);
+
+            var textBindingElement = new TextMessageEncodingBindingElement
+            {
+                MessageVersion = MessageVersion.CreateVersion(EnvelopeVersion.Soap12, AddressingVersion.None)
+            };
+
+            webServiceBinding.Elements[0] = textBindingElement;
         }
 
 
@@ -54,7 +70,7 @@ namespace JpManifestoNFE
         /// <returns></returns>
         protected XmlDocument ParseToXmlDocument(object toXmlDoc, Type objType)
         {
-            XmlSerializer xmlSerializer = new XmlSerializer(objType, defaultNamespace);
+            XmlSerializer xmlSerializer = new XmlSerializer(objType, DEFAULT_NAMESPACE);
 
             Exception exception;
 
@@ -115,7 +131,7 @@ namespace JpManifestoNFE
         {
             string exMessage = string.Empty;
            
-            doc.Schemas.Add(schemaManager.GetSchemas(defaultNamespace, schemas));
+            doc.Schemas.Add(schemaManager.GetSchemas(DEFAULT_NAMESPACE, schemas));
 
             doc.Validate((e, s) =>
             {

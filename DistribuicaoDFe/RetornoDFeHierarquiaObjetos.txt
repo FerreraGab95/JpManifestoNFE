@@ -1,0 +1,22 @@
+﻿Obejeto retornado retDistDFeInt
+
+(Campos de interesse)
+
+cStat -> Código do status do serviço: Os valores esperados são 137 e 138, sendo nenhum documento localizado e documentos localizados
+respectivamente.
+
+loteDistDFeInt {XsdClasses.retDistDFeIntLoteDistDFeInt} -> Lote de documentos retornados
+
+loteDistDFeInt.docZip {XsdClasses.retDistDFeIntLoteDistDFeIntDocZip[37]} -> Coleção de documentos compactados;
+
+docZip.NSU -> Número NSU do documento;
+docZip.schema -> Schema do documento compactado*¹
+docZip.Value -> Array contendo os bytes do arquivo XML compactado;
+
+Observações:
+
+A maioria, senão, todos os schemas que podem ser retornados da consulta são resNFe, procNFe, resEvento, 
+
+
+
+

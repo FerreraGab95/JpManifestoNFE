@@ -65,7 +65,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
             if (!ValidacaoTipos.ValidateChaveNFe(chaveNfe))
                 throw new FormatException(ErrorMsgs.INVALID_CHAVE_NFE);
 
-            var client = new NFeDistribuicaoDFeSoapClient(basicHttpBinding, new EndpointAddress(WebServiceUri));
+            var client = new NFeDistribuicaoDFeSoapClient(webServiceBinding, new EndpointAddress(WebServiceUri));
             client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
 
             var consulta = new distDFeIntConsChNFe();
@@ -93,7 +93,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
 
         public async Task<retDistDFeInt> ConsultaUltimoNSU(int ultNSU)
         {
-            var client = new NFeDistribuicaoDFeSoapClient(basicHttpBinding, new EndpointAddress(WebServiceUri));
+            var client = new NFeDistribuicaoDFeSoapClient(webServiceBinding, new EndpointAddress(WebServiceUri));
             client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
 
             var consulta = new distDFeIntDistNSU();
@@ -121,7 +121,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
 
         public async Task<retDistDFeInt> ConsultaNSU(int nsu)
         {
-            var client = new NFeDistribuicaoDFeSoapClient(basicHttpBinding, new EndpointAddress(WebServiceUri));
+            var client = new NFeDistribuicaoDFeSoapClient(webServiceBinding, new EndpointAddress(WebServiceUri));
             client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
 
             var consulta = new distDFeIntConsNSU();
@@ -154,7 +154,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         public distDFeInt GetElementoRaiz()
         {
             var distDfe = new distDFeInt();
-            distDfe.cUFAutor = TCodUfIBGE.Rio_de_Janeiro;
+            distDfe.cUFAutor = uf;
             distDfe.tpAmb = TAmb.Producao;
 
             //Devido a erros na serialização dos XSDs, alguns campos estão com nomes genéricos, que ao serem alterados,
