@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 using NFeDistribuicaoDFe;
 using XsdClasses;
 
@@ -13,15 +11,20 @@ namespace JpManifestoNFE.DistribuicaoDFe
 {
     public class DistribuicaoDFe : SefazWebService, IDistribuicaoDFe
     {
-        //private const string VERSAO = "1.01";
         private string WebServiceUri = "https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx";
+
+        /// <summary>
+        /// Códigos de retorno esperados;
+        /// </summary>
+        private int[] expectedReturnCodes = { 137, 138 };
+
 
         /// <summary>
         /// Schemas requeridos para a execução do serviço;
         /// </summary>
         private readonly WebServiceSchemas[] ServiceSchemas = new WebServiceSchemas[]
         {
-            WebServiceSchemas.tiposDistDFe,
+            //WebServiceSchemas.tiposDistDFe,
             //WebServiceSchemas.tiposBasico,
             WebServiceSchemas.distDFeInt
         };
@@ -37,13 +40,12 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// <param name="schemaManager"></param>
         /// <param name="clienteDoc">Número do documento do cliente (Igual ao do certificado)</param>
         /// <param name="uf">UF do Cliente</param>
-        private DistribuicaoDFe(X509Certificate2 certificate, SchemaManager schemaManager, 
-            string clienteDoc, TCodUfIBGE uf) : base(certificate, schemaManager)
+        private DistribuicaoDFe(X509Certificate2 certificate, SchemaManager schemaManager,string clienteDoc, 
+            TCodUfIBGE uf, EnvelopeVersion envelopeVersion) : base(certificate, schemaManager, envelopeVersion)
         {
             this.clienteDoc = clienteDoc;
             this.uf = uf;
         }
-
 
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         public static IDistribuicaoDFe GetDistribuicaoDFe(X509Certificate2 certificate, SchemaManager schemaManager,
             string clienteDoc, TCodUfIBGE uf)
         {
-            return new DistribuicaoDFe(certificate, schemaManager, clienteDoc, uf);
+            return new DistribuicaoDFe(certificate, schemaManager, clienteDoc, uf, EnvelopeVersion.Soap12);
         }
 
 
@@ -64,9 +66,6 @@ namespace JpManifestoNFE.DistribuicaoDFe
         {
             if (!ValidacaoTipos.ValidateChaveNFe(chaveNfe))
                 throw new FormatException(ErrorMsgs.INVALID_CHAVE_NFE);
-
-            var client = new NFeDistribuicaoDFeSoapClient(webServiceBinding, new EndpointAddress(WebServiceUri));
-            client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
 
             var consulta = new distDFeIntConsChNFe();
 
@@ -76,26 +75,15 @@ namespace JpManifestoNFE.DistribuicaoDFe
             var doc = GetElementoRaiz();
             doc.Item1 = consulta;
 
-            var xmlDoc = ParseToXmlDocument(doc, typeof(distDFeInt));
-            ValidateXmlFromSchema(xmlDoc, ServiceSchemas);
+            var xmlDoc = XmlHelper.ParseToXmlDocument(doc, typeof(distDFeInt), DEFAULT_NAMESPACE);
+            ValidateXmlFromSchemas(xmlDoc, ServiceSchemas);
 
-            try
-            {
-                var result = await client.nfeDistDFeInteresseAsync(xmlDoc.DocumentElement);
-                return ParseFromXml<retDistDFeInt>(result.Body.nfeDistDFeInteresseResult, typeof(retDistDFeInt));
-            }
-            catch (EndpointNotFoundException)
-            {
-                throw new HttpRequestException(ErrorMsgs.SEFAZ_CONN_ERROR);
-            }
+            return await RunClient(xmlDoc);
         }
 
 
         public async Task<retDistDFeInt> ConsultaUltimoNSU(int ultNSU)
         {
-            var client = new NFeDistribuicaoDFeSoapClient(webServiceBinding, new EndpointAddress(WebServiceUri));
-            client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
-
             var consulta = new distDFeIntDistNSU();
 
             ///Formata o NSU para o padrão definido no schema.
@@ -104,26 +92,15 @@ namespace JpManifestoNFE.DistribuicaoDFe
             var doc = GetElementoRaiz();
             doc.Item1 = consulta;
 
-            var xmlDoc = ParseToXmlDocument(doc, typeof(distDFeInt));
-            ValidateXmlFromSchema(xmlDoc, ServiceSchemas);
+            var xmlDoc = XmlHelper.ParseToXmlDocument(doc, typeof(distDFeInt), DEFAULT_NAMESPACE);
+            ValidateXmlFromSchemas(xmlDoc, ServiceSchemas);
 
-            try
-            {
-                var result = await client.nfeDistDFeInteresseAsync(xmlDoc.DocumentElement);
-                return ParseFromXml<retDistDFeInt>(result.Body.nfeDistDFeInteresseResult, typeof(retDistDFeInt));
-            }
-            catch (EndpointNotFoundException)
-            {
-                throw new HttpRequestException(ErrorMsgs.SEFAZ_CONN_ERROR);
-            }
+            return await RunClient(xmlDoc);
         }
 
 
         public async Task<retDistDFeInt> ConsultaNSU(int nsu)
         {
-            var client = new NFeDistribuicaoDFeSoapClient(webServiceBinding, new EndpointAddress(WebServiceUri));
-            client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
-
             var consulta = new distDFeIntConsNSU();
 
             ///Formata o NSU para o padrão definido no schema.
@@ -132,13 +109,26 @@ namespace JpManifestoNFE.DistribuicaoDFe
             var doc = GetElementoRaiz();
             doc.Item1 = consulta;
 
-            var xmlDoc = ParseToXmlDocument(doc, typeof(distDFeInt));
-            ValidateXmlFromSchema(xmlDoc, ServiceSchemas);
+            var xmlDoc = XmlHelper.ParseToXmlDocument(doc, typeof(distDFeInt), DEFAULT_NAMESPACE);
+            ValidateXmlFromSchemas(xmlDoc, ServiceSchemas);
+
+            return await RunClient(xmlDoc);
+        }
+
+
+        private async Task<retDistDFeInt> RunClient(XmlDocument distDoc)
+        {
+            var client = new NFeDistribuicaoDFeSoapClient(webServiceBinding, new EndpointAddress(WebServiceUri));
+            client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
 
             try
             {
-                var result = await client.nfeDistDFeInteresseAsync(xmlDoc.DocumentElement);
-                return ParseFromXml<retDistDFeInt>(result.Body.nfeDistDFeInteresseResult, typeof(retDistDFeInt));
+                var requestData = await client.nfeDistDFeInteresseAsync(distDoc.DocumentElement);
+                var result = XmlHelper.ParseFromXml<retDistDFeInt>(requestData.Body.nfeDistDFeInteresseResult, 
+                    typeof(retDistDFeInt));
+                SefazReturnCodeHelper.ThrowIfCodeIsError(int.Parse(result.cStat), expectedReturnCodes);
+
+                return result;
             }
             catch (EndpointNotFoundException)
             {
@@ -151,7 +141,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// Retorna o elemento pai, onde os tipos de consulta se situam;
         /// </summary>
         /// <returns></returns>
-        public distDFeInt GetElementoRaiz()
+        private distDFeInt GetElementoRaiz()
         {
             var distDfe = new distDFeInt();
             distDfe.cUFAutor = uf;

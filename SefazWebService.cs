@@ -29,13 +29,55 @@ namespace JpManifestoNFE
         /// <summary>
         /// Binding com as definições da conexão com o WebService;
         /// </summary>
-        protected CustomBinding webServiceBinding;
+        protected CustomBinding webServiceBinding
+        {
+            get
+            {
+                if(envelopeVersion == EnvelopeVersion.Soap12)
+                {
+                   return GetBindingSOAP_1_2();
+                }
 
-        public SefazWebService(X509Certificate2 clientCertificate, SchemaManager schemaFactory) 
+                return GetBindingSOAP_1_1();
+            }
+        }
+
+
+        /// <summary>
+        /// Versão do protocolo SOAP utilizado no WebService;
+        /// </summary>
+        protected EnvelopeVersion envelopeVersion;
+
+        public SefazWebService(X509Certificate2 clientCertificate, SchemaManager schemaFactory, EnvelopeVersion envelopeVersion) 
         {
             this.schemaManager = schemaFactory;
             this.clientCertificate = clientCertificate;
+            this.envelopeVersion = envelopeVersion;
 
+           
+        }
+
+
+        private CustomBinding GetBindingSOAP_1_1()
+        {
+            var basicBinding = new BasicHttpBinding();
+            basicBinding.Security.Mode = BasicHttpSecurityMode.Transport;
+            basicBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
+            basicBinding.TextEncoding = Encoding.Default;
+            /*
+            O tamanho padrão das mensagens de retorno é de 65536 bytes, que é insuficiente para alguns tipos de serviços
+            como o de Distribuição de DFe, que pode conter um grande número de caracteres dependendo do tipo de pesquisa feita,
+            por isso, foi atríbuido o dobro do valor padrão. 
+            */
+            basicBinding.MaxReceivedMessageSize *= 10;
+
+            var webServiceBinding = new CustomBinding(basicBinding);
+            return webServiceBinding;
+        }
+
+
+        private CustomBinding GetBindingSOAP_1_2()
+        {
             var basicBinding = new BasicHttpBinding();
             basicBinding.Security.Mode = BasicHttpSecurityMode.Transport;
             basicBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
@@ -51,7 +93,7 @@ namespace JpManifestoNFE
             //webServiceBinding é uma bind customizada para utilizar o Soap 1.2 ao invés do Soap 1.1 que é padrão do HttpBinding
             //permitindo assim uma compatibilidade maior com WebServices de estados diferentes;
             //Solução desenvolvida por (Nicolas Giannone)https://stackoverflow.com/users/10662490/nicolas-giannone
-            webServiceBinding = new CustomBinding(basicBinding);
+            var webServiceBinding = new CustomBinding(basicBinding);
 
             var textBindingElement = new TextMessageEncodingBindingElement
             {
@@ -59,66 +101,8 @@ namespace JpManifestoNFE
             };
 
             webServiceBinding.Elements[0] = textBindingElement;
-        }
 
-
-        /// <summary>
-        /// Serializa um objeto de tipo presente em XsdClasses para um XmlDocument;
-        /// </summary>
-        /// <param name="toXmlDoc"></param>
-        /// <param name="objType"></param>
-        /// <returns></returns>
-        protected XmlDocument ParseToXmlDocument(object toXmlDoc, Type objType)
-        {
-            XmlSerializer xmlSerializer = new XmlSerializer(objType, DEFAULT_NAMESPACE);
-
-            Exception exception;
-
-            using (var sWriter = new StringWriter())
-            {
-                using (var xmlWriter = XmlWriter.Create(sWriter))
-                {
-                    try
-                    {
-                        xmlSerializer.Serialize(xmlWriter, toXmlDoc);
-                        string xml = sWriter.ToString();
-                        XmlDocument doc = new XmlDocument();
-                        doc.LoadXml(xml);
-                        return doc;
-                    }
-                    catch (Exception ex)
-                    {
-                        exception = ex;
-                    }
-                }
-            }
-
-            if (exception != null) throw exception;
-
-            return null;
-        }
-
-
-
-        /// <summary>
-        /// Deserializa um nó Xml para uma instância de um objeto de tipo especificado em XsdClasses;
-        /// </summary>
-        /// <param name="responseNode"></param>
-        /// <param name="typeToConvert"></param>
-        /// <returns></returns>
-        protected T ParseFromXml<T>(XmlNode responseNode, Type typeToConvert)
-        {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeToConvert);
-
-            XmlDocument doc = new XmlDocument();
-            XmlNode toImport = doc.ImportNode(responseNode, true);
-            doc.AppendChild(toImport);
-
-            using (var sReader = new StringReader(responseNode.OuterXml))
-            {
-                var des = xmlSerializer.Deserialize(sReader);
-                return (T)des;
-            }
+            return webServiceBinding;
         }
 
 
@@ -127,7 +111,7 @@ namespace JpManifestoNFE
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="schemas"></param>
-        protected void ValidateXmlFromSchema(XmlDocument doc, params WebServiceSchemas[] schemas) 
+        protected void ValidateXmlFromSchemas(XmlDocument doc, params WebServiceSchemas[] schemas) 
         {
             string exMessage = string.Empty;
            

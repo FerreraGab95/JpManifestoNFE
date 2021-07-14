@@ -14,8 +14,10 @@ resNFe
 procNFe
 
 ------------Bugs--------------
-NFeStatusServico -> Resolver bug de encoding dos serviços do MT e de GO, onde é exigido UTF-8, mas a conversão do xml 
+(Parcialmente resolvido PA e BA não funcionam)NFeStatusServico -> Resolver bug de encoding dos serviços do MT e de GO, onde é exigido UTF-8, mas a conversão do xml 
 o transforma em UTF-16
+
+----------Consulta DFE, repetir a consulta até o último número NSU para lotes com mais de 50 notas;
 
 
 

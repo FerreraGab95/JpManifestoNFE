@@ -31,5 +31,9 @@ namespace JpManifestoNFE
         /// 
         /// </summary>
         public static string INVALID_CHAVE_NFE = "A chave da NFe informada não é valida.";
+
+        public static string MANIFEST_LOTE_EXCEDIDO = "É permitido manifestar no máximo 20 NFes por lote.";
+
+        public static string SEFAZ_NO_RESPONSE = "A solicitação feita para a SEFAZ não obteve retorno.";
     }
 }

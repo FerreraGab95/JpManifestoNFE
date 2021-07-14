@@ -375,19 +375,19 @@ public enum TEventoInfEventoTpEvento {
     
     /// <remarks/>
     [System.Xml.Serialization.XmlEnumAttribute("210200")]
-    Item210200,
+    ConfirmacaoOperacao,
     
     /// <remarks/>
     [System.Xml.Serialization.XmlEnumAttribute("210210")]
-    Item210210,
+    CienciaOperacao,
     
     /// <remarks/>
     [System.Xml.Serialization.XmlEnumAttribute("210220")]
-    Item210220,
+    DesconhecimentoOperacao,
     
     /// <remarks/>
     [System.Xml.Serialization.XmlEnumAttribute("210240")]
-    Item210240,
+    OperacaoNaoRealizada,
 }
 
 /// <remarks/>

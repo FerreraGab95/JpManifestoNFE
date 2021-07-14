@@ -57,23 +57,34 @@ namespace JpManifestoNFE
                 throw new FileNotFoundException(ErrorMsgs.XSD_FILE_NOT_FOUND + missingSchema);
             }
 
-            var schemaSet = new XmlSchemaSet();
+            var schemaSet = new XmlSchemaSet()
+            {
+                XmlResolver = new XmlUrlResolver()
+            };
 
             foreach (var schemaFile in schemaFiles)
             {
-                schemaSet.Add(defaultNamespace, schemaFile.FullName);
+                using (var xmlReader = XmlReader.Create(new FileStream(schemaFile.FullName, FileMode.Open, FileAccess.Read),
+                    null, schemaFile.FullName))
+                {
+                    schemaSet.Add(XmlSchema.Read(xmlReader, null));
+                }
             }
+
+            schemaSet.CompilationSettings = new XmlSchemaCompilationSettings();
+            schemaSet.Compile();
 
             return schemaSet;
         }
     }
 
+
     public enum WebServiceSchemas
     {
         /// <summary>
-        /// Schema contendo os tipos básicos presentes nas operações do WebService.
+        /// Schema contendo os tipos básicos mais recentes presentes nas operações do WebService.
         /// </summary>
-        tiposBasico,
+        tiposBasico_v4,
         /// <summary>
         /// Leiaute da NF-e.
         /// </summary>
@@ -111,8 +122,24 @@ namespace JpManifestoNFE
         /// </summary>
         tiposDistDFe,
         /// <summary>
-        /// Distribuição DFe: Consulta notas emitidas para o CNPJ informado;
+        /// Distribuição DFe: Consulta notas emitidas para o CNPJ informado.
         /// </summary>
         distDFeInt,
+        /// <summary>
+        /// Leiaute dos eventos de confirmação de recebimento.
+        /// </summary>
+        leiauteConfRecebto,
+        /// <summary>
+        /// Leiautr de envio de confirmaçã de recebimento;
+        /// </summary>
+        envConfRecebto,
+        /// <summary>
+        /// Modelo mais antigo dos tipos básicos, utilizado na manifestação das NFes.
+        /// </summary>
+        tiposBasico_v1,
+        /// <summary>
+        /// Schema responsável pelos tipos de assinaturas dos documentos.
+        /// </summary>
+        xmldsig
     }
 }

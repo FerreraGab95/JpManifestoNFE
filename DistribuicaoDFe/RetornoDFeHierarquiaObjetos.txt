@@ -15,7 +15,27 @@ docZip.Value -> Array contendo os bytes do arquivo XML compactado;
 
 Observações:
 
-A maioria, senão, todos os schemas que podem ser retornados da consulta são resNFe, procNFe, resEvento, 
+A maioria, senão, todos os schemas que podem ser retornados da consulta são resNFe, procNFe, resEvento.
+
+---------Dados uteis a serem extraídos nos resumos de documetos-----------
+
+-ProcNFe-
+
+*Identificaão da NFe:
+
+
+
+*Dados emitente: Todos os campos
+
+*Dados destinatário: Todos os campos
+
+*Totais: Todos os dados
+
+*Duplicatas;
+
+*Produtos: Todos os dados, e encontrar um modo de resumir todos os impostos, onde o ICMS possui diversos tipos;
+
+*Informações adicionais;
 
 
 

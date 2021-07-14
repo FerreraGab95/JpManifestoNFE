@@ -15,9 +15,9 @@ namespace JpManifestoNFE.StatusServico
         /// </summary>
         private readonly WebServiceSchemas[] ServiceSchemas = new WebServiceSchemas[]
         {
-            WebServiceSchemas.tiposBasico,
+            //WebServiceSchemas.tiposBasico_v4,
             WebServiceSchemas.consStatServ,
-            WebServiceSchemas.leiauteConsStatServ,
+            //WebServiceSchemas.leiauteConsStatServ,
         };
 
         private const string VERSAO_SERVICO = "4.00";
@@ -26,6 +26,12 @@ namespace JpManifestoNFE.StatusServico
 
         private readonly TCodUfIBGE uf;
 
+
+        /// <summary>
+        /// Código de retorno esperado;
+        /// </summary>
+        private readonly int expectedReturnCode = 107;
+
         /// <summary>
         /// Cria uma nova instância de NFeStatusServico, serviço que informa o status de todos 
         /// os outros WebServices da UF informada;
@@ -33,8 +39,8 @@ namespace JpManifestoNFE.StatusServico
         /// <param name="certificate"></param>
         /// <param name="schemaManager"></param>
         /// <param name="webServiceUrl"></param>
-        private NfeStatusServico(X509Certificate2 certificate, SchemaManager schemaManager, TCodUfIBGE uf) :
-            base(certificate, schemaManager) 
+        private NfeStatusServico(X509Certificate2 certificate, SchemaManager schemaManager, TCodUfIBGE uf,EnvelopeVersion envelopeVersion) :
+            base(certificate, schemaManager, envelopeVersion) 
         {
             this.uf = uf;
             webServiceUri = NfeStatusServicoURIs.ServiceURI(uf);
@@ -46,7 +52,7 @@ namespace JpManifestoNFE.StatusServico
         /// os outros WebServices da UF informada;
         public static INfeStatusServico GetNfeStatusServico(X509Certificate2 certificate, SchemaManager schemaManager, TCodUfIBGE uf)
         {
-            return new NfeStatusServico(certificate, schemaManager, uf);
+            return new NfeStatusServico(certificate, schemaManager, uf, EnvelopeVersion.Soap12);
         }
 
 
@@ -66,13 +72,15 @@ namespace JpManifestoNFE.StatusServico
             consStatServ.versao = VERSAO_SERVICO;
             consStatServ.xServ = TConsStatServXServ.STATUS;
 
-            var xmlDoc = ParseToXmlDocument(consStatServ, typeof(TConsStatServ));
-            ValidateXmlFromSchema(xmlDoc, ServiceSchemas);
+            var xmlDoc = XmlHelper.ParseToXmlDocument(consStatServ, typeof(TConsStatServ), DEFAULT_NAMESPACE);
+            ValidateXmlFromSchemas(xmlDoc, ServiceSchemas);
 
             try
             {
-                var dadosRequest = await client.nfeStatusServicoNFAsync(xmlDoc);
-                return ParseFromXml<TRetConsStatServ>(dadosRequest.nfeResultMsg, typeof(TRetConsStatServ));
+                var requestData = await client.nfeStatusServicoNFAsync(xmlDoc);
+                var result = XmlHelper.ParseFromXml<TRetConsStatServ>(requestData.nfeResultMsg, typeof(TRetConsStatServ));
+                SefazReturnCodeHelper.ThrowIfCodeIsError(int.Parse(result.cStat), expectedReturnCode);
+                return result;
             }
             catch(EndpointNotFoundException) 
             {
