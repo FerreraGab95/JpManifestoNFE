@@ -36,7 +36,7 @@ namespace JpManifestoNFE
 		/// <param name="sefazReturnCode"></param>
 		public static string GetCodeMessage(int sefazReturnCode)
         {
-			// Obs: Arquivo gerado via script, verificar se existe algum erro.
+			// Obs: Arquivo gerado via script, pode conter pequenos erros.
 			switch (sefazReturnCode)
 			{
 				case 100:
