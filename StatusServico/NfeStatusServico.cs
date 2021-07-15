@@ -39,8 +39,8 @@ namespace JpManifestoNFE.StatusServico
         /// <param name="certificate"></param>
         /// <param name="schemaManager"></param>
         /// <param name="webServiceUrl"></param>
-        private NfeStatusServico(X509Certificate2 certificate, SchemaManager schemaManager, TCodUfIBGE uf,EnvelopeVersion envelopeVersion) :
-            base(certificate, schemaManager, envelopeVersion) 
+        private NfeStatusServico(X509Certificate2 certificate, SchemaManager schemaManager, TCodUfIBGE uf) :
+            base(certificate, schemaManager) 
         {
             this.uf = uf;
             webServiceUri = NfeStatusServicoURIs.ServiceURI(uf);
@@ -52,7 +52,7 @@ namespace JpManifestoNFE.StatusServico
         /// os outros WebServices da UF informada;
         public static INfeStatusServico GetNfeStatusServico(X509Certificate2 certificate, SchemaManager schemaManager, TCodUfIBGE uf)
         {
-            return new NfeStatusServico(certificate, schemaManager, uf, EnvelopeVersion.Soap12);
+            return new NfeStatusServico(certificate, schemaManager, uf);
         }
 
 

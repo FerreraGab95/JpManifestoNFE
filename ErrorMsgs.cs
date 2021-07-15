@@ -34,6 +34,8 @@ namespace JpManifestoNFE
 
         public static string MANIFEST_LOTE_EXCEDIDO = "É permitido manifestar no máximo 20 NFes por lote.";
 
+        public static string MANIFEST_LOTE_VAZIO = "Nenhum documento a ser manifestado.";
+
         public static string SEFAZ_NO_RESPONSE = "A solicitação feita para a SEFAZ não obteve retorno.";
     }
 }

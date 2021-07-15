@@ -15,7 +15,7 @@ namespace JpManifestoNFE
 		public static void ThrowIfCodeIsError(int sefazReturnCode, int expectedCode)
         {
 			if (sefazReturnCode != expectedCode)
-				throw new SefazReturnException(GetCodeMessage(sefazReturnCode));
+				throw new SefazReturnException(sefazReturnCode, GetCodeMessage(sefazReturnCode));
         }
 
 
@@ -26,7 +26,7 @@ namespace JpManifestoNFE
 		public static void ThrowIfCodeIsError(int sefazReturnCode, int[] expectedCodes)
 		{
 			if (!expectedCodes.Contains(sefazReturnCode))
-				throw new SefazReturnException(GetCodeMessage(sefazReturnCode));
+				throw new SefazReturnException(sefazReturnCode, GetCodeMessage(sefazReturnCode));
 		}
 
 

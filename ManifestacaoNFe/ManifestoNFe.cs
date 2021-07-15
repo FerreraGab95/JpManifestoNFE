@@ -20,6 +20,11 @@ namespace JpManifestoNFE.ManifestacaoNFe
         private const string SEQ_EVENTO = "1";
 
         /// <summary>
+        /// Tipo de ambiente da manifestação;
+        /// </summary>
+        internal TAmb TipoAmbiente { get; set; }
+
+        /// <summary>
         /// Identificação única do evento;
         /// </summary>
         public string IdEvento { get => $"ID{GetCodigoEvento()}{ChaveNFe}0{SEQ_EVENTO}"; }
@@ -59,6 +64,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
             TipoEvento = tipoEvento;
             ChaveNFe = chaveNFe;
             DocCliente = documentoCliente;
+            TipoAmbiente = TAmb.Producao;
         }
 
         private string GetCodigoEvento()
@@ -95,14 +101,14 @@ namespace JpManifestoNFE.ManifestacaoNFe
         }
 
 
-        internal TEvento GetEventoManifesto(TUf ufEvento)
+        internal TEvento GetEventoManifesto()
         {
             var evento = new TEvento();
             var infoEvento = new TEventoInfEvento();
 
             infoEvento.chNFe = ChaveNFe;
             infoEvento.cOrgao = TCOrgaoIBGE.Item91; //Ambiente Nacional;
-            infoEvento.tpAmb = TAmb.Homologacao;
+            infoEvento.tpAmb = TipoAmbiente;
             infoEvento.tpEvento = TipoEvento;
             infoEvento.verEvento = VERSAO_EVENTOS;
             infoEvento.nSeqEvento = SEQ_EVENTO;

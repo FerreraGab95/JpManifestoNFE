@@ -31,11 +31,13 @@ namespace JpManifestoNFE.ManifestacaoNFe
         /// </summary>
         private XmlSign xmlSigner;
 
-        //private const string WEB_SERVICE_URI = "https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"; //Produção
-        private const string WEB_SERVICE_URI = "https://hom.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"; //Homologação (Testes)
-        //private const string WEB_SERVICE_URI = "https://nfe-homologacao.svrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx";
-        //private const string WEB_SERVICE_URI = "https://nfe-homologacao.sefazrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx";
-        //private const string WEB_SERVICE_URI = "https://homnfe.sefaz.am.gov.br/services2/services/RecepcaoEvento4";
+        #if TEST
+            private TAmb tipoAmbiente = TAmb.Homologacao;
+            private const string WEB_SERVICE_URI = "https://hom.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"; //Homologação (Testes)
+        #else
+            private TAmb tipoAmbiente = TAmb.Producao;
+            private const string WEB_SERVICE_URI = "https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"; //Produção
+        #endif
 
         /// <summary>
         /// Schemas requeridos para a execução do serviço;
@@ -48,8 +50,8 @@ namespace JpManifestoNFE.ManifestacaoNFe
             //WebServiceSchemas.xmldsig
         };
 
-        private ManifestacaoNFe(X509Certificate2 certificate, SchemaManager schemaManager, TUf uf, EnvelopeVersion envelopeVersion)
-            : base(certificate, schemaManager, envelopeVersion)
+        private ManifestacaoNFe(X509Certificate2 certificate, SchemaManager schemaManager, TUf uf)
+            : base(certificate, schemaManager)
         {
             this.uf = uf;
             xmlSigner = new XmlSign(certificate);
@@ -58,7 +60,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
         
         public static IManifestacaoNFe GetManifestacaoNFe(X509Certificate2 certificate, SchemaManager schemaManager, TUf uf)
         {
-            return new ManifestacaoNFe(certificate, schemaManager, uf, EnvelopeVersion.Soap12);
+            return new ManifestacaoNFe(certificate, schemaManager, uf);
         }
 
 
@@ -68,6 +70,8 @@ namespace JpManifestoNFE.ManifestacaoNFe
             {
                 throw new ArgumentOutOfRangeException(ErrorMsgs.MANIFEST_LOTE_EXCEDIDO);
             }
+            else if (manifestoNFes == null || manifestoNFes.Length == 0)
+                throw new ArgumentException(ErrorMsgs.MANIFEST_LOTE_VAZIO);
 
             var client = new NFeRecepcaoEvento.NFeRecepcaoEvento4SoapClient(webServiceBinding,
             new EndpointAddress(WEB_SERVICE_URI));
@@ -108,12 +112,14 @@ namespace JpManifestoNFE.ManifestacaoNFe
         /// <returns></returns>
         private XmlDocument SignAndImportEventos(XmlDocument xmlDocument, ManifestoNFe[] eventos)
         {
-            foreach (var evento in eventos)
+            for (int i = 0; i < eventos.Length; i++)
             {
-                var xmlEvento = XmlHelper.ParseToXmlDocument(evento.GetEventoManifesto(uf), typeof(TEvento), DEFAULT_NAMESPACE)
+                eventos[i].TipoAmbiente = tipoAmbiente;
+
+                var xmlEvento = XmlHelper.ParseToXmlDocument(eventos[i].GetEventoManifesto(), typeof(TEvento), DEFAULT_NAMESPACE)
                     .DocumentElement;
 
-                xmlSigner.SignXml(xmlEvento, $"#{evento.IdEvento}");
+                xmlSigner.SignXml(xmlEvento, $"#{eventos[i].IdEvento}");
 
                 var appendNode = xmlDocument.ImportNode(xmlEvento, true);
                 xmlDocument.DocumentElement.AppendChild(appendNode);

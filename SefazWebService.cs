@@ -33,12 +33,7 @@ namespace JpManifestoNFE
         {
             get
             {
-                if(envelopeVersion == EnvelopeVersion.Soap12)
-                {
-                   return GetBindingSOAP_1_2();
-                }
-
-                return GetBindingSOAP_1_1();
+                return GetBindingSOAP_1_2();
             }
         }
 
@@ -48,31 +43,10 @@ namespace JpManifestoNFE
         /// </summary>
         protected EnvelopeVersion envelopeVersion;
 
-        public SefazWebService(X509Certificate2 clientCertificate, SchemaManager schemaFactory, EnvelopeVersion envelopeVersion) 
+        public SefazWebService(X509Certificate2 clientCertificate, SchemaManager schemaFactory) 
         {
             this.schemaManager = schemaFactory;
             this.clientCertificate = clientCertificate;
-            this.envelopeVersion = envelopeVersion;
-
-           
-        }
-
-
-        private CustomBinding GetBindingSOAP_1_1()
-        {
-            var basicBinding = new BasicHttpBinding();
-            basicBinding.Security.Mode = BasicHttpSecurityMode.Transport;
-            basicBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
-            basicBinding.TextEncoding = Encoding.Default;
-            /*
-            O tamanho padrão das mensagens de retorno é de 65536 bytes, que é insuficiente para alguns tipos de serviços
-            como o de Distribuição de DFe, que pode conter um grande número de caracteres dependendo do tipo de pesquisa feita,
-            por isso, foi atríbuido o dobro do valor padrão. 
-            */
-            basicBinding.MaxReceivedMessageSize *= 10;
-
-            var webServiceBinding = new CustomBinding(basicBinding);
-            return webServiceBinding;
         }
 
 
