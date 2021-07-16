@@ -31,7 +31,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
         /// </summary>
         private XmlSign xmlSigner;
 
-        #if TEST
+        #if DEBUG
             private TAmb tipoAmbiente = TAmb.Homologacao;
             private const string WEB_SERVICE_URI = "https://hom.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"; //Homologação (Testes)
         #else

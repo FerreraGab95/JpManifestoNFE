@@ -2,7 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <DefineConstants>TEST</DefineConstants> <!--Define a constante de testes-->
+    <DefineConstants>DEBUG</DefineConstants>
+    <Version>0.9.1</Version>
+    <Authors>JpManifestoNFE</Authors>
+    <Copyright>GPL-3.0 License</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile> <!--Define a constante de testes-->
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +24,13 @@
 
   <ItemGroup>
     <Folder Include="Connected Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
   
 </Project>
