@@ -73,9 +73,20 @@ Obs: A consulta por último NSU limita até 50 documentos em um único lote, cas
 
 **Atenção:** O serviço de Distribuição DF-e possui um limite de consumo, caso muitas consultas sejam feitas em um curto período de tempo, será lançada uma exceção de **Consumo Indevido** onde o usuário deverá aguardar até 1 hora para utilizar o serviço novamente.
 
-#### Convertendo os resultados da Distriuição DF-e
-O serviço de Distribuição DF-e retorna os documentos compactados em lotes, os documentos são retornados 
+#### Processando os resultados da Distriuição DF-e
+O serviço de Distribuição DF-e retorna os documentos compactados em lotes, para facilitar o processamento do retorno, foi criada a classe **RetornoNFeDocs**, que processa e organiza todos os documentos de acordo com os tipos retornados.
+```C#
+IRetornoDFeDocs dfeDocs = RetornoDFeDocs.ProcessRetornoDFeDocs(retornoDistDFe);
 
+//Retorna os resumos de eventos vinculados a notas fiscais.
+var resumoEventosNFe = dfeDocs.GetResumosEventoNFe();
+
+//Retorna os resumos das notas fiscais emitidas para o destinatário.
+var resumoNFe = dfeDocs.GetResumosNFe();
+
+//Retorna as notas fiscais emitidas para o destinatário, já processadas. (Após manifestar Ciência da Operação ou Confirmação da Operação).
+var procNFe = dfeDocs.GetNFesProcessadas();
+```
 ### Tipos convertidos
 
 Foi criado um arquivo *.cs* chamado XsdClasses, contendo todos os tipos requeridos para a execução dos serviços, 
