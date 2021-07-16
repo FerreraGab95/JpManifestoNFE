@@ -89,4 +89,4 @@ var procNFe = dfeDocs.GetNFesProcessadas();
 ```
 ### Tipos convertidos
 
-Foi criado um arquivo *.cs* chamado XsdClasses, contendo todos os tipos requeridos para a execução dos serviços, 
+Foi criado um arquivo *.cs* chamado XsdClasses, contendo todos os tipos declarados nos schemas, esta conversão foi feita utilizando a ferramenta **Xml Schemas/DataTypes support utility** presente no Visual Studio. Infelizmente a conversão não é 100% perfeita, alguns campos possuem nomes genéricos como *"Item"*, que pode ser corrigido com alguns ajustes em versões futuras.
