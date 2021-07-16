@@ -69,9 +69,12 @@ retDistDFe retornoDFe = distribuicaoDFe.ConsultaNSU(NSU);
 ```C#
 retDistDFe retornoDFe = await distribuicaoDFe.ConsultaUltimoNSU(NSU);
 ```
-Obs: A consulta por último NSU limita até 50 documentos em um único lote, caso a consulta deva retornar mais do que o limite permitido, o lote recebido terá duas propriedades, **UltNSU** e **MaxNSU**, onde **MaxNSU** é a ultima NSU do último evento registrado para o destinatário, e **UltNSU** é o último NSU do último documento do lote recebido. Caso queira obter todos os resultados, efetua novas consultas informando o último NSU recebido, até que o mesmo seja igual a **MaxNSU**.
+Obs: A consulta por último NSU limita até 50 documentos em um único lote, caso a consulta deva retornar mais do que o limite permitido, o lote recebido terá duas propriedades, **UltNSU** e **MaxNSU**, onde **MaxNSU** é o ultimo NSU do último evento registrado para o destinatário, e **UltNSU** é o último NSU do último documento do lote recebido. Caso queira obter todos os resultados, efetua novas consultas informando o último NSU recebido, até que o mesmo seja igual a **MaxNSU**.
 
 **Atenção:** O serviço de Distribuição DF-e possui um limite de consumo, caso muitas consultas sejam feitas em um curto período de tempo, será lançada uma exceção de **Consumo Indevido** onde o usuário deverá aguardar até 1 hora para utilizar o serviço novamente.
+
+#### Convertendo os resultados da Distriuição DF-e
+O serviço de Distribuição DF-e retorna os documentos compactados em lotes, os documentos são retornados 
 
 ### Tipos convertidos
 
