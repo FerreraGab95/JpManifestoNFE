@@ -44,6 +44,8 @@ Obs: *Por regra, o serviço suporta até 20 eventos simultâneos por vez.*
 ```C#
 TRetEnvEvento retornoEventos = await manifestacaoNFe.ManifestarNFes(cienciaDaOperacao, confirmacaoOperacao, opNaoRealizada, descOperacao);
 ```
+Uma exceção *SefazReturnException* é lançada quando a manifestação do lote (como um todo) for mal sucedida, caso a solicitação seja bem sucedida, dentro da instância do retorno haverá também um lote, com a resposta de cada manifestação enviada, onde cada uma deve ser verificada para saber se o evento foi anexado a NF-e ou não.
+
 --------------------
 
 ### Serviço de Distribuição DF-e
@@ -67,7 +69,9 @@ retDistDFe retornoDFe = distribuicaoDFe.ConsultaNSU(NSU);
 ```C#
 retDistDFe retornoDFe = await distribuicaoDFe.ConsultaUltimoNSU(NSU);
 ```
-Obs: Por limita
+Obs: A consulta por último NSU limita até 50 documentos em um único lote, caso a consulta deva retornar mais do que o limite permitido, o lote recebido terá duas propriedades, **UltNSU** e **MaxNSU**, onde **MaxNSU** é a ultima NSU do último evento registrado para o destinatário, e **UltNSU** é o último NSU do último documento do lote recebido. Caso queira obter todos os resultados, efetua novas consultas informando o último NSU recebido, até que o mesmo seja igual a **MaxNSU**.
+
+**Atenção:** O serviço de Distribuição DF-e possui um limite de consumo, caso muitas consultas sejam feitas em um curto período de tempo, será lançada uma exceção de **Consumo Indevido** onde o usuário deverá aguardar até 1 hora para utilizar o serviço novamente.
 
 ### Tipos convertidos
 
