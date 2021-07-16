@@ -11,7 +11,7 @@ using XsdClasses;
 
 namespace JpManifestoNFE
 {
-    public class SchemaManager
+    public class SchemaHelper
     {
         /// <summary>
         /// Nome do schema que contém a declaração dos tipos básicos presentes nos outros arquivos;
@@ -19,7 +19,7 @@ namespace JpManifestoNFE
 
         private DirectoryInfo schemaDirectory;
 
-        public SchemaManager(string schemaDirectory) 
+        public SchemaHelper(string schemaDirectory) 
         {
             this.schemaDirectory = new DirectoryInfo(schemaDirectory);
         }
@@ -28,10 +28,9 @@ namespace JpManifestoNFE
         /// <summary>
         /// Retorna os XML Schemas de validação com o namespace, informados no parâmetro schema;
         /// </summary>
-        /// <param name="defaultNamespace"></param>
         /// <param name="xsdClassType">Tipo do objeto de requisição do serviço, encontrado em XSDClasses</param>
         /// <returns></returns>
-        public XmlSchemaSet GetSchemas(string defaultNamespace, params WebServiceSchemas[] schemas)
+        public XmlSchemaSet GetSchemas(params WebServiceSchemas[] schemas)
         {
             var schemaFiles = new List<FileInfo>();
 

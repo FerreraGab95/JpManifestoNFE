@@ -15,6 +15,7 @@ namespace JpManifestoNFE.StatusServico
         /// <summary>
         /// Retorna o status dos WebServices da Sefaz;
         /// </summary>
+        /// <exception cref="SefazReturnException"/>
         /// <returns></returns>
         Task<TRetConsStatServ> GetStatusService();
     }

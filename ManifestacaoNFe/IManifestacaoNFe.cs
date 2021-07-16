@@ -13,6 +13,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
         /// caso seja passada uma quantidade superior, será lançada um ArgumentOutOfRangeException.
         /// </summary>
         /// <param name="manifestoNFes"></param>
+        /// <exception cref="SefazReturnException"/>
         /// <returns></returns>
         Task<TRetEnvEvento> ManifestarNFes(params ManifestoNFe[] manifestoNFes);
     }

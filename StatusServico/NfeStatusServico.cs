@@ -39,7 +39,7 @@ namespace JpManifestoNFE.StatusServico
         /// <param name="certificate"></param>
         /// <param name="schemaManager"></param>
         /// <param name="webServiceUrl"></param>
-        private NfeStatusServico(X509Certificate2 certificate, SchemaManager schemaManager, TCodUfIBGE uf) :
+        private NfeStatusServico(X509Certificate2 certificate, SchemaHelper schemaManager, TCodUfIBGE uf) :
             base(certificate, schemaManager) 
         {
             this.uf = uf;
@@ -50,7 +50,7 @@ namespace JpManifestoNFE.StatusServico
         /// <summary>
         /// Retorna uma instância de INFeStatusServico, serviço que informa o status de todos 
         /// os outros WebServices da UF informada;
-        public static INfeStatusServico GetNfeStatusServico(X509Certificate2 certificate, SchemaManager schemaManager, TCodUfIBGE uf)
+        public static INfeStatusServico GetNfeStatusServico(X509Certificate2 certificate, SchemaHelper schemaManager, TCodUfIBGE uf)
         {
             return new NfeStatusServico(certificate, schemaManager, uf);
         }

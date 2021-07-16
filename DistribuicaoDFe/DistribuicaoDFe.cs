@@ -40,7 +40,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// <param name="schemaManager"></param>
         /// <param name="clienteDoc">Número do documento do cliente (Igual ao do certificado)</param>
         /// <param name="uf">UF do Cliente</param>
-        private DistribuicaoDFe(X509Certificate2 certificate, SchemaManager schemaManager,string clienteDoc, 
+        private DistribuicaoDFe(X509Certificate2 certificate, SchemaHelper schemaManager,string clienteDoc, 
             TCodUfIBGE uf) : base(certificate, schemaManager)
         {
             this.clienteDoc = clienteDoc;
@@ -55,7 +55,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// <param name="schemaManager"></param>
         /// <param name="clienteDoc">Número do documento do cliente (Igual ao do certificado)</param>
         /// <param name="uf">UF do Cliente</param>
-        public static IDistribuicaoDFe GetDistribuicaoDFe(X509Certificate2 certificate, SchemaManager schemaManager,
+        public static IDistribuicaoDFe GetDistribuicaoDFe(X509Certificate2 certificate, SchemaHelper schemaManager,
             string clienteDoc, TCodUfIBGE uf)
         {
             return new DistribuicaoDFe(certificate, schemaManager, clienteDoc, uf);

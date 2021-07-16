@@ -50,7 +50,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
             //WebServiceSchemas.xmldsig
         };
 
-        private ManifestacaoNFe(X509Certificate2 certificate, SchemaManager schemaManager, TUf uf)
+        private ManifestacaoNFe(X509Certificate2 certificate, SchemaHelper schemaManager, TUf uf)
             : base(certificate, schemaManager)
         {
             this.uf = uf;
@@ -58,7 +58,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
         }
 
         
-        public static IManifestacaoNFe GetManifestacaoNFe(X509Certificate2 certificate, SchemaManager schemaManager, TUf uf)
+        public static IManifestacaoNFe GetManifestacaoNFe(X509Certificate2 certificate, SchemaHelper schemaManager, TUf uf)
         {
             return new ManifestacaoNFe(certificate, schemaManager, uf);
         }

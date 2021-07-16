@@ -12,6 +12,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// Retorna o documento que possui o NSU informado;
         /// </summary>
         /// <param name="nsu"></param>
+        /// <exception cref="SefazReturnException"/>
         /// <returns></returns>
         Task<retDistDFeInt> ConsultaNSU(int nsu);
 
@@ -20,6 +21,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// Retorna o documento que possui a chave NFe informada;
         /// </summary>
         /// <param name="chaveNfe">Chave da NFe contendo 44 dígitos</param>
+        /// <exception cref="SefazReturnException"/>
         /// <returns></returns>
         Task<retDistDFeInt> ConsultaChaveNFe(string chaveNfe);
 
@@ -28,6 +30,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// Retorna todos os documentos à partir do número NSU informado;
         /// </summary>
         /// <param name="ultNSU"></param>
+        /// <exception cref="SefazReturnException"/>
         /// <returns></returns>
         Task<retDistDFeInt> ConsultaUltimoNSU(int ultNSU);
     }

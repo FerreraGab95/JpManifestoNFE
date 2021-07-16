@@ -12,7 +12,7 @@ namespace JpManifestoNFE
 {
     public class SefazWebService
     {
-        protected readonly SchemaManager schemaManager;
+        protected readonly SchemaHelper schemaManager;
 
         /// <summary>
         /// Namescpace padrão dos XMls dos WebServices;
@@ -43,7 +43,7 @@ namespace JpManifestoNFE
         /// </summary>
         protected EnvelopeVersion envelopeVersion;
 
-        public SefazWebService(X509Certificate2 clientCertificate, SchemaManager schemaFactory) 
+        public SefazWebService(X509Certificate2 clientCertificate, SchemaHelper schemaFactory) 
         {
             this.schemaManager = schemaFactory;
             this.clientCertificate = clientCertificate;
@@ -89,7 +89,7 @@ namespace JpManifestoNFE
         {
             string exMessage = string.Empty;
            
-            doc.Schemas.Add(schemaManager.GetSchemas(DEFAULT_NAMESPACE, schemas));
+            doc.Schemas.Add(schemaManager.GetSchemas(schemas));
 
             doc.Validate((e, s) =>
             {
