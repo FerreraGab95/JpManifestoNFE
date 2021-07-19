@@ -16,7 +16,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: 4.7.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
@@ -26,5 +26,5 @@ jobs:
     - name: Publish  
       uses: brandedoutcast/publish-nuget@v2.5.5  
       with:   
-        PROJECT_FILE_PATH: JpManifestoNFE.csproj 
+        PROJECT_FILE_PATH: /JpManifestoNFE.csproj 
         NUGET_KEY: ${{secrets.PUBLISH_TOKEN}} 
