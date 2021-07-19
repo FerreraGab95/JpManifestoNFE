@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <DefineConstants></DefineConstants>
-    <Version>0.9.1</Version>
+    <Version>0.9.2</Version>
     <Authors>FerreraGab95</Authors>
     <Copyright>GPL-3.0 License</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -11,9 +11,12 @@
     <PackageDescription>Biblioteca de consumo de serviços de manifestação e distribuição de documentos fiscais.</PackageDescription>
     <RepositoryUrl>https://github.com/FerreraGab95/JpManifestoNFE</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="5.0.0" />
+    <PackageReference Include="System.Security.Permissions" Version="5.0.0" />
     <PackageReference Include="System.ServiceModel.Duplex" Version="4.4.*" />
     <PackageReference Include="System.ServiceModel.Http" Version="4.8.1" />
     <PackageReference Include="System.ServiceModel.NetTcp" Version="4.4.*" />

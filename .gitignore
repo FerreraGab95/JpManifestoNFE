@@ -340,3 +340,4 @@ ASALocalRun/
 healthchecksdb
 /nuget.config
 /JpManifestoNFE.sln
+*.cmd
