@@ -55,7 +55,7 @@ namespace JpManifestoNFE
             var basicBinding = new BasicHttpBinding();
             basicBinding.Security.Mode = BasicHttpSecurityMode.Transport;
             basicBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
-            basicBinding.TextEncoding = Encoding.Default;
+            basicBinding.TextEncoding = Encoding.UTF8;
             /*
             O tamanho padrão das mensagens de retorno é de 65536 bytes, que é insuficiente para alguns tipos de serviços
             como o de Distribuição de DFe, que pode conter um grande número de caracteres dependendo do tipo de pesquisa feita,
