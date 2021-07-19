@@ -71,6 +71,7 @@ namespace JpManifestoNFE
 
             var textBindingElement = new TextMessageEncodingBindingElement
             {
+                WriteEncoding = Encoding.UTF8,
                 MessageVersion = MessageVersion.CreateVersion(EnvelopeVersion.Soap12, AddressingVersion.None)
             };
 
