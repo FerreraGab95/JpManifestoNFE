@@ -2,11 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <DefineConstants>DEBUG</DefineConstants>
+    <DefineConstants></DefineConstants>
     <Version>0.9.1</Version>
-    <Authors>JpManifestoNFE</Authors>
+    <Authors>FerreraGab95</Authors>
     <Copyright>GPL-3.0 License</Copyright>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile> <!--Define a constante de testes-->
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Company>FerreraGab95</Company>
+    <PackageDescription>Biblioteca de consumo de serviços de manifestação e distribuição de documentos fiscais.</PackageDescription>
+    <RepositoryUrl>https://github.com/FerreraGab95/JpManifestoNFE</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

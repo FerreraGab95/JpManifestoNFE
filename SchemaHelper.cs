@@ -128,7 +128,7 @@ namespace JpManifestoNFE
         /// </summary>
         leiauteConfRecebto,
         /// <summary>
-        /// Leiautr de envio de confirmaçã de recebimento;
+        /// Leiaute de envio de confirmação de recebimento;
         /// </summary>
         envConfRecebto,
         /// <summary>
