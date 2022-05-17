@@ -11,12 +11,29 @@ namespace JpManifestoNFE.DistribuicaoDFe
 {
     public class DistribuicaoDFe : SefazWebService, IDistribuicaoDFe
     {
-        private string WebServiceUri = "https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx";
+        private static string WEB_SERVICE_PROD_URI = "https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx";
+        private static string WEB_SERVICE_HOM_URI = "https://hom1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx";
+
+        private string WebServiceUri
+        {
+            get
+            {
+                if (tipoAmbiente == TAmb.Producao)
+                    return WEB_SERVICE_PROD_URI;
+                else
+                    return WEB_SERVICE_HOM_URI;
+            }
+        }
 
         /// <summary>
         /// Códigos de retorno esperados;
         /// </summary>
         private int[] expectedReturnCodes = { 137, 138 };
+
+        /// <summary>
+        /// Tipo de ambiente do serviço;
+        /// </summary>
+        private TAmb tipoAmbiente;
 
 
         /// <summary>
@@ -41,8 +58,9 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// <param name="clienteDoc">Número do documento do cliente (Igual ao do certificado)</param>
         /// <param name="uf">UF do Cliente</param>
         private DistribuicaoDFe(X509Certificate2 certificate, SchemaHelper schemaManager,string clienteDoc, 
-            TCodUfIBGE uf) : base(certificate, schemaManager)
+            TCodUfIBGE uf, TAmb tipoAmbiente = TAmb.Producao) : base(certificate, schemaManager)
         {
+            this.tipoAmbiente = tipoAmbiente;
             this.clienteDoc = clienteDoc;
             this.uf = uf;
         }
@@ -56,9 +74,9 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// <param name="clienteDoc">Número do documento do cliente (Igual ao do certificado)</param>
         /// <param name="uf">UF do Cliente</param>
         public static IDistribuicaoDFe GetDistribuicaoDFe(X509Certificate2 certificate, SchemaHelper schemaManager,
-            string clienteDoc, TCodUfIBGE uf)
+            string clienteDoc, TCodUfIBGE uf, TAmb tipoAmbiente = TAmb.Producao)
         {
-            return new DistribuicaoDFe(certificate, schemaManager, clienteDoc, uf);
+            return new DistribuicaoDFe(certificate, schemaManager, clienteDoc, uf, tipoAmbiente);
         }
 
 
@@ -145,7 +163,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         {
             var distDfe = new distDFeInt();
             distDfe.cUFAutor = uf;
-            distDfe.tpAmb = TAmb.Producao;
+            distDfe.tpAmb = tipoAmbiente;
 
             //Devido a erros na serialização dos XSDs, alguns campos estão com nomes genéricos, que ao serem alterados,
             //podem causar erros na validação com o schema;

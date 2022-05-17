@@ -31,13 +31,16 @@ namespace JpManifestoNFE.ManifestacaoNFe
         /// </summary>
         private XmlSign xmlSigner;
 
-        #if DEBUG
             private TAmb tipoAmbiente = TAmb.Homologacao;
-            private const string WEB_SERVICE_URI = "https://hom.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"; //Homologação (Testes)
-        #else
-            private TAmb tipoAmbiente = TAmb.Producao;
-            private const string WEB_SERVICE_URI = "https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"; //Produção
-        #endif
+            private const string WEB_SERVICE_HOM_URI = "https://hom.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"; //Homologação (Testes)
+            private const string WEB_SERVICE_PROD_URI = "https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"; //Produção
+
+            private string WebServiceUri 
+            { get { return tipoAmbiente == TAmb.Producao ? 
+                    WEB_SERVICE_PROD_URI : WEB_SERVICE_HOM_URI; } }
+
+
+
 
         /// <summary>
         /// Schemas requeridos para a execução do serviço;
@@ -50,17 +53,19 @@ namespace JpManifestoNFE.ManifestacaoNFe
             //WebServiceSchemas.xmldsig
         };
 
-        private ManifestacaoNFe(X509Certificate2 certificate, SchemaHelper schemaManager, TUf uf)
-            : base(certificate, schemaManager)
+        private ManifestacaoNFe(X509Certificate2 certificate, SchemaHelper schemaManager, TUf uf, 
+            TAmb tipoAmbiente = TAmb.Producao): base(certificate, schemaManager)
         {
+            this.tipoAmbiente = tipoAmbiente;
             this.uf = uf;
             xmlSigner = new XmlSign(certificate);
         }
 
         
-        public static IManifestacaoNFe GetManifestacaoNFe(X509Certificate2 certificate, SchemaHelper schemaManager, TUf uf)
+        public static IManifestacaoNFe GetManifestacaoNFe(X509Certificate2 certificate, 
+            SchemaHelper schemaManager, TUf uf, TAmb tipoAmbiente = TAmb.Producao)
         {
-            return new ManifestacaoNFe(certificate, schemaManager, uf);
+            return new ManifestacaoNFe(certificate, schemaManager, uf, tipoAmbiente);
         }
 
 
@@ -74,7 +79,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
                 throw new ArgumentException(ErrorMsgs.MANIFEST_LOTE_VAZIO);
 
             var client = new NFeRecepcaoEvento.NFeRecepcaoEvento4SoapClient(webServiceBinding,
-            new EndpointAddress(WEB_SERVICE_URI));
+            new EndpointAddress(WebServiceUri));
 
 
             var envEvento = new TEnvEvento();
@@ -90,7 +95,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
             {
                 client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
 
-                var channel = client.ChannelFactory.CreateChannel(new EndpointAddress(WEB_SERVICE_URI));
+                var channel = client.ChannelFactory.CreateChannel(new EndpointAddress(WebServiceUri));
                 var requestMsg = new NFeRecepcaoEvento.nfeRecepcaoEventoNFRequest(docXml.DocumentElement);
 
                 var requestData = await channel.nfeRecepcaoEventoNFAsync(requestMsg);

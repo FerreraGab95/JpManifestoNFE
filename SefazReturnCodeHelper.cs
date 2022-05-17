@@ -8,11 +8,11 @@ namespace JpManifestoNFE
     public static class SefazReturnCodeHelper
     {
 
-		/// <summary>
-		/// Lança uma exceção caso o código retornado seja diferente do código de retorno esperado;
-		/// </summary>
-		/// <param name="sefazReturnCode"></param>
-		public static void ThrowIfCodeIsError(int sefazReturnCode, int expectedCode)
+        /// <summary>
+        /// Lança uma exceção caso o código retornado seja diferente do código de retorno esperado;
+        /// </summary>
+        /// <param name="sefazReturnCode"></param>
+        public static void ThrowIfCodeIsError(int sefazReturnCode, int expectedCode)
         {
 			if (sefazReturnCode != expectedCode)
 				throw new SefazReturnException(sefazReturnCode, GetCodeMessage(sefazReturnCode));
@@ -27,7 +27,7 @@ namespace JpManifestoNFE
 		{
 			if (!expectedCodes.Contains(sefazReturnCode))
 				throw new SefazReturnException(sefazReturnCode, GetCodeMessage(sefazReturnCode));
-		}
+        }
 
 
 		/// <summary>
@@ -76,7 +76,7 @@ namespace JpManifestoNFE
 				case 137:
 					return ("Nenhum documento localizado para o Destinatário.");
 				case 138:
-					return ("Documento localizado para o Destinatário.");
+                    return ("Documento localizado para o Destinatário.");
 				case 139:
 					return ("Pedido de Download processado.");
 				case 140:
