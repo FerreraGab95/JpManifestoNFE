@@ -24,7 +24,7 @@ SchemaHelper schemaManager = new SchemaHelper(diretorioSchema);
 
 #### Criar uma instância de *IManifestacaoNFe*
 ```C#
-IManifestacaoNFe manifestacaoNFe = ManifestacaoNFe.GetManifestacaoNFe(certificadoCliente, schemaManager, TUf.RJ);
+IManifestacaoNFe manifestacaoNFe = ManifestacaoNFe.GetManifestacaoNFe(certificadoCliente, schemaManager, TUf.RJ, TAmb tipoAmbiente = TAmb.Producao);
 ```
 #### Criar as instâncias de ManifestoNFe, que contém os dados necessários para a manifestação, abaixo será criada uma instância de cada tipo de operação.
 ```C#
@@ -51,7 +51,7 @@ Uma exceção *SefazReturnException* é lançada quando a manifestação do lote
 ### Serviço de Distribuição DF-e
 #### Criar uma nova instância de *IDistribuicaoDFe*
 ```C#
- IDistribuicaoDFe distribuicaoDFe = DistribuicaoDFe.GetDistribuicaoDFe(certificadoCliente, schemaManager, DocumentoCliente, CodigoUF);
+ IDistribuicaoDFe distribuicaoDFe = DistribuicaoDFe.GetDistribuicaoDFe(certificadoCliente, schemaManager, DocumentoCliente, CodigoUF, TAmb tipoAmbiente = TAmb.Producao);
 ```
 O serviço de distribuição DF-e suporta 3 tipos de consulta.
 
