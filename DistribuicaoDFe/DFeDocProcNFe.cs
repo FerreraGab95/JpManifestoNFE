@@ -8,6 +8,13 @@ namespace JpManifestoNFE.DistribuicaoDFe
 
         private DFeDocProcNFe() { }
 
+        public DFeDocProcNFe(TNfeProc nFeProc)
+        {
+            NFeProc = nFeProc;
+        }
+
+
+
         /// <summary>
         /// Leiaute de compartilhamento da NF-e
         /// </summary>

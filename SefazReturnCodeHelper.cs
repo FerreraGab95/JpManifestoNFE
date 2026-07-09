@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace JpManifestoNFE
+﻿namespace JpManifestoNFE
 {
     public static class SefazReturnCodeHelper
     {

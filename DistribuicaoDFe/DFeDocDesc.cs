@@ -9,6 +9,12 @@ namespace JpManifestoNFE.DistribuicaoDFe
     {
         private DFeDocDesc() { }
 
+        public DFeDocDesc(string nomeSchema, string conteudoDoc)
+        {
+            NomeSchema = nomeSchema;
+            ConteudoDoc = conteudoDoc;
+        }
+
         /// <summary>
         /// Nome do tipo de schema do documento;
         /// </summary>

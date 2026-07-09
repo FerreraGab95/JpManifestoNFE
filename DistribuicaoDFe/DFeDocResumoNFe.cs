@@ -6,7 +6,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
     {
         public const string SCHEMA_NAME = "resNFe";
 
-        private DFeDocResumoNFe() { }
+        public DFeDocResumoNFe() { }
 
         /// <summary>
         ///Conjunto de informações resumo da NF-e localizadas

@@ -1,5 +1,4 @@
 ﻿using SefazSchemasClasses;
-using System;
 
 namespace JpManifestoNFE.DistribuicaoDFe.ResumoDocumentos
 {

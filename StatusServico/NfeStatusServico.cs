@@ -1,9 +1,7 @@
 ﻿using NFeStatusServico;
 using SefazSchemasClasses;
-using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
-using System.Threading.Tasks;
 
 namespace JpManifestoNFE.StatusServico
 {

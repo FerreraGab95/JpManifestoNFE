@@ -10,7 +10,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// </summary>
         public resEvento ResumoEvento { get; internal set; }
 
-        private DFeDocResumoEvento() { }
+        public DFeDocResumoEvento() { }
 
 
         public static DFeDocResumoEvento GetInstance(retDistDFeIntLoteDistDFeIntDocZip xmlDocZip)

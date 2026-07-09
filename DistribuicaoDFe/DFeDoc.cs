@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace JpManifestoNFE.DistribuicaoDFe
+﻿namespace JpManifestoNFE.DistribuicaoDFe
 {
     public abstract class DFeDoc
     {

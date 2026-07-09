@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Xml;
+﻿using System.Xml;
 using System.Xml.Schema;
 
 namespace JpManifestoNFE
@@ -37,7 +34,8 @@ namespace JpManifestoNFE
             foreach (var schema in schemas)
             {
                 schemaFiles.AddRange(schemaDirectory.GetFiles($"{schema}*"));
-            };
+            }
+            ;
 
             if (schemaFiles.Count == 0)
             {

@@ -1,5 +1,4 @@
 ﻿using SefazSchemasClasses;
-using System.Collections.Generic;
 
 namespace JpManifestoNFE.DistribuicaoDFe
 {

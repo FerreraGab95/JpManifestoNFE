@@ -6,7 +6,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
     {
         public const string SCHEMA_NAME = "procEventoNFe";
 
-        private DFeProcEventoNFe() { }
+        public DFeProcEventoNFe() { }
 
         public TProcEvento_procEventoNFe_v1_00 procEventoNFe { get; internal set; }
 

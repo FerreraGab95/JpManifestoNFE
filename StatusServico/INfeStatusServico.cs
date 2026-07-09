@@ -1,5 +1,4 @@
 ﻿using SefazSchemasClasses;
-using System.Threading.Tasks;
 
 namespace JpManifestoNFE.StatusServico
 {

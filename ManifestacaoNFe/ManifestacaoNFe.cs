@@ -1,9 +1,6 @@
 ﻿using SefazSchemasClasses;
-using System;
-using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace JpManifestoNFE.ManifestacaoNFe

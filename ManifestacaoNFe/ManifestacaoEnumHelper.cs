@@ -1,7 +1,5 @@
 ﻿
 using SefazSchemasClasses;
-using System;
-using System.Linq;
 
 namespace JpManifestoNFE.ManifestacaoNFe
 {
