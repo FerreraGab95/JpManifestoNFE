@@ -97,12 +97,14 @@ namespace JpManifestoNFE.DistribuicaoDFe
         }
 
 
-        public async Task<retDistDFeInt> ConsultaUltimoNSU(int ultNSU)
+        public Task<retDistDFeInt> ConsultaUltimoNSU(int ultNSU) => ConsultaUltimoNSU((long)ultNSU);
+
+        public async Task<retDistDFeInt> ConsultaUltimoNSU(long ultNSU)
         {
             var consulta = new distDFeIntDistNSU();
 
             ///Formata o NSU para o padrão definido no schema.
-            consulta.ultNSU = String.Format("{0:000000000000000}", ultNSU);
+            consulta.ultNSU = Nsu.Format(ultNSU);
 
             var doc = GetElementoRaiz();
             doc.Item1 = consulta;
@@ -114,12 +116,14 @@ namespace JpManifestoNFE.DistribuicaoDFe
         }
 
 
-        public async Task<retDistDFeInt> ConsultaNSU(int nsu)
+        public Task<retDistDFeInt> ConsultaNSU(int nsu) => ConsultaNSU((long)nsu);
+
+        public async Task<retDistDFeInt> ConsultaNSU(long nsu)
         {
             var consulta = new distDFeIntConsNSU();
 
             ///Formata o NSU para o padrão definido no schema.
-            consulta.NSU = String.Format("{0:000000000000000}", nsu);
+            consulta.NSU = Nsu.Format(nsu);
 
             var doc = GetElementoRaiz();
             doc.Item1 = consulta;
@@ -140,7 +144,8 @@ namespace JpManifestoNFE.DistribuicaoDFe
                 var requestData = await client.nfeDistDFeInteresseAsync(distDoc.DocumentElement);
                 var result = XmlHelper.ParseFromXml<retDistDFeInt>(requestData.Body.nfeDistDFeInteresseResult,
                     typeof(retDistDFeInt));
-                SefazReturnCodeHelper.ThrowIfCodeIsError(int.Parse(result.cStat), expectedReturnCodes);
+                if (!expectedReturnCodes.Contains(int.Parse(result.cStat)))
+                    throw new SefazReturnException(result);
 
                 return result;
             }
@@ -148,6 +153,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
             {
                 throw new HttpRequestException(ErrorMsgs.SEFAZ_CONN_ERROR);
             }
+            finally { CloseClient(client); }
         }
 
 
@@ -167,7 +173,9 @@ namespace JpManifestoNFE.DistribuicaoDFe
             distDfe.ItemElementName = ValidacaoTipos.ValidateCnpj(clienteDoc) ?
                 TipoDoc.CNPJ : TipoDoc.CPF;
             distDfe.Item = clienteDoc;
-            distDfe.ItemElementName = TipoDoc.CNPJ;
+
+            if (!ValidacaoTipos.ValidateCnpj(clienteDoc) && !ValidacaoTipos.ValidateCpf(clienteDoc))
+                throw new FormatException("Informe CPF ou CNPJ sem pontuação.");
 
             return distDfe;
         }

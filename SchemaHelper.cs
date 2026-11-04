@@ -1,75 +1,85 @@
-﻿using System.Xml;
+using System.Collections.Concurrent;
+using System.Net;
+using System.Xml;
 using System.Xml.Schema;
 
 namespace JpManifestoNFE
 {
     public class SchemaHelper
     {
-        /// <summary>
-        /// Nome do schema que contém a declaração dos tipos básicos presentes nos outros arquivos;
-        /// </summary>
+        private static readonly ConcurrentDictionary<string, Lazy<XmlSchemaSet>> Cache = new();
+        private readonly DirectoryInfo schemaDirectory;
+        private readonly IReadOnlyDictionary<WebServiceSchemas, string> selectedFiles;
 
-        private DirectoryInfo schemaDirectory;
+        public SchemaHelper(string schemaDirectory) : this(schemaDirectory, new Dictionary<WebServiceSchemas, string>()) { }
 
-        public SchemaHelper(string schemaDirectory)
+        /// <summary>Select exact XSD filenames when a package contains more than one version.</summary>
+        public SchemaHelper(string schemaDirectory, IReadOnlyDictionary<WebServiceSchemas, string> selectedFiles)
         {
             this.schemaDirectory = new DirectoryInfo(schemaDirectory);
+            this.selectedFiles = new Dictionary<WebServiceSchemas, string>(selectedFiles);
         }
 
-
-        /// <summary>
-        /// Retorna os XML Schemas de validação com o namespace, informados no parâmetro schema;
-        /// </summary>
-        /// <param name="xsdClassType">Tipo do objeto de requisição do serviço, encontrado em XSDClasses</param>
-        /// <returns></returns>
         public XmlSchemaSet GetSchemas(params WebServiceSchemas[] schemas)
         {
-            var schemaFiles = new List<FileInfo>();
-
-            if (!schemaDirectory.Exists)
-                throw new DirectoryNotFoundException(ErrorMsgs.XSD_PATH_NOT_FOUND);
-
-
-            //Utiliza o pattern para que seja retornado apenas os schemas relacionadas ao WebService escolhido;
-            foreach (var schema in schemas)
+            ArgumentNullException.ThrowIfNull(schemas);
+            schemaDirectory.Refresh();
+            if (!schemaDirectory.Exists) throw new DirectoryNotFoundException(ErrorMsgs.XSD_PATH_NOT_FOUND);
+            if (schemas.Length == 0) throw new ArgumentException("Informe ao menos um schema.", nameof(schemas));
+            var files = new List<FileInfo>();
+            foreach (var schema in schemas.Distinct())
             {
-                schemaFiles.AddRange(schemaDirectory.GetFiles($"{schema}*"));
-            }
-            ;
-
-            if (schemaFiles.Count == 0)
-            {
-                string missingSchema = String.Empty;
-
-                foreach (var schemaFile in schemas)
+                FileInfo[] candidates;
+                if (selectedFiles.TryGetValue(schema, out var filename))
                 {
-                    missingSchema += $"{schemaFile}_vX.XX.xsd\n";
+                    if (Path.GetFileName(filename) != filename || !filename.EndsWith(".xsd", StringComparison.OrdinalIgnoreCase))
+                        throw new ArgumentException("Informe apenas o nome do arquivo XSD dentro do pacote.");
+                    candidates = schemaDirectory.GetFiles(filename);
                 }
-
-                throw new FileNotFoundException(ErrorMsgs.XSD_FILE_NOT_FOUND + missingSchema);
+                else candidates = schemaDirectory.GetFiles($"{schema}*.xsd");
+                if (candidates.Length == 0) throw new FileNotFoundException(ErrorMsgs.XSD_FILE_NOT_FOUND + schema);
+                if (candidates.Length != 1)
+                    throw new InvalidOperationException($"Há mais de uma versão de {schema}. Selecione explicitamente o arquivo XSD no SchemaHelper.");
+                files.Add(candidates[0]);
             }
+            // Includes/imports may change independently of their entry-point XSD.
+            var package = schemaDirectory.GetFiles("*.xsd", SearchOption.AllDirectories).OrderBy(file => file.FullName, StringComparer.Ordinal).ToArray();
+            var stamp = string.Join("|", package.Select(file => $"{file.FullName}:{file.Length}:{file.LastWriteTimeUtc.Ticks}"));
+            var key = schemaDirectory.FullName + "|" + string.Join("|", files.Select(file => file.Name).OrderBy(name => name, StringComparer.Ordinal)) + "|" + stamp;
+            if (Cache.Count > 32) Cache.Clear();
+            var compiled = Cache.GetOrAdd(key, _ => new Lazy<XmlSchemaSet>(() => Compile(files), LazyThreadSafetyMode.ExecutionAndPublication)).Value;
+            // Do not expose the cache's mutable collection to callers.
+            var result = new XmlSchemaSet();
+            result.Add(compiled);
+            return result;
+        }
 
-            var schemaSet = new XmlSchemaSet()
+        private XmlSchemaSet Compile(IReadOnlyList<FileInfo> files)
+        {
+            var resolver = new PackageResolver(schemaDirectory.FullName);
+            var result = new XmlSchemaSet { XmlResolver = resolver };
+            result.ValidationEventHandler += (_, error) => throw error.Exception;
+            foreach (var file in files)
             {
-                XmlResolver = new XmlUrlResolver()
-            };
-
-            foreach (var schemaFile in schemaFiles)
-            {
-                using (var xmlReader = XmlReader.Create(new FileStream(schemaFile.FullName, FileMode.Open, FileAccess.Read),
-                    null, schemaFile.FullName))
-                {
-                    schemaSet.Add(XmlSchema.Read(xmlReader, null));
-                }
+                using var reader = XmlReader.Create(file.FullName, new XmlReaderSettings
+                { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = resolver });
+                result.Add(null, reader);
             }
+            result.Compile();
+            return result;
+        }
 
-            schemaSet.CompilationSettings = new XmlSchemaCompilationSettings();
-            schemaSet.Compile();
-
-            return schemaSet;
+        private sealed class PackageResolver(string root) : XmlUrlResolver
+        {
+            public override object GetEntity(Uri absoluteUri, string? role, Type? ofObjectToReturn)
+            {
+                var prefix = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)) + Path.DirectorySeparatorChar;
+                if (!absoluteUri.IsFile || !Path.GetFullPath(absoluteUri.LocalPath).StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    throw new XmlException("O schema tenta carregar uma dependência fora do pacote local.");
+                return base.GetEntity(absoluteUri, role, ofObjectToReturn);
+            }
         }
     }
-
 
     public enum WebServiceSchemas
     {

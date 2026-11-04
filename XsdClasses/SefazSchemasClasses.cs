@@ -15937,6 +15937,8 @@ namespace SefazSchemasClasses
         [System.Xml.Serialization.XmlEnumAttribute("99")]
         Item99,
 
+        [System.Xml.Serialization.XmlEnumAttribute("20")]
+        Item20,
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.7.3081.0")]

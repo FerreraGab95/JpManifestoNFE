@@ -1,4 +1,4 @@
-﻿using SefazSchemasClasses;
+using SefazSchemasClasses;
 
 namespace JpManifestoNFE.DistribuicaoDFe
 {
@@ -15,11 +15,11 @@ namespace JpManifestoNFE.DistribuicaoDFe
             CompareSchemas(SCHEMA_NAME, xmlDocZip.schema);
 
             var procEventoNFe = new DFeProcEventoNFe();
-            procEventoNFe.NSU = long.Parse(xmlDocZip.NSU);
+            procEventoNFe.NumeroNSU = Nsu.ParseOptional(xmlDocZip.NSU);
 
             using (var docStream = DFeDocStreamHelper.ExtractDocXmlContent(xmlDocZip.Value))
             {
-                procEventoNFe.NSU = long.Parse(xmlDocZip.NSU);
+                procEventoNFe.NumeroNSU = Nsu.ParseOptional(xmlDocZip.NSU);
                 procEventoNFe.procEventoNFe = (TProcEvento_procEventoNFe_v1_00)DFeDocStreamHelper.
                     ParseXmlContentToObject(typeof(TProcEvento_procEventoNFe_v1_00),
                     docStream);

@@ -72,6 +72,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
 
         public async Task<TRetEnvEvento_confRecebto_v1_00> ManifestarNFes(params ManifestoNFe[] manifestoNFes)
         {
+            ArgumentNullException.ThrowIfNull(manifestoNFes);
             if (manifestoNFes.Length > MAX_NFE_LOTE)
             {
                 throw new ArgumentOutOfRangeException(ErrorMsgs.MANIFEST_LOTE_EXCEDIDO);
@@ -96,12 +97,10 @@ namespace JpManifestoNFE.ManifestacaoNFe
             {
                 client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
 
-                var channel = client.ChannelFactory.CreateChannel(new EndpointAddress(WebServiceUri));
-                var requestMsg = new NFeRecepcaoEvento.nfeRecepcaoEventoNFRequest(docXml.DocumentElement);
-
-                var requestData = await channel.nfeRecepcaoEventoNFAsync(requestMsg);
+                var requestData = await client.nfeRecepcaoEventoNFAsync(docXml.DocumentElement);
                 var result = XmlHelper.ParseFromXml<TRetEnvEvento_confRecebto_v1_00>(requestData.nfeRecepcaoEventoNFResult, typeof(TRetEnvEvento_confRecebto_v1_00));
-                SefazReturnCodeHelper.ThrowIfCodeIsError(int.Parse(result.cStat), expectedReturnCode);
+                if (int.Parse(result.cStat) != expectedReturnCode)
+                    throw new SefazReturnException(int.Parse(result.cStat), result.xMotivo);
 
                 return result;
             }
@@ -109,6 +108,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
             {
                 throw new HttpRequestException(ErrorMsgs.SEFAZ_CONN_ERROR);
             }
+            finally { CloseClient(client); }
         }
 
 

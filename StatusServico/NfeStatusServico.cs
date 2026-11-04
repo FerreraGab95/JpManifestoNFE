@@ -22,6 +22,9 @@ namespace JpManifestoNFE.StatusServico
         private string webServiceUri;
 
         private readonly UfIBGE uf;
+        private readonly TipoAmbiente tipoAmbiente;
+        public TipoAmbiente Ambiente => tipoAmbiente;
+        public string Endereco => webServiceUri;
 
 
         /// <summary>
@@ -36,11 +39,12 @@ namespace JpManifestoNFE.StatusServico
         /// <param name="certificate"></param>
         /// <param name="schemaManager"></param>
         /// <param name="webServiceUrl"></param>
-        private NfeStatusServico(X509Certificate2 certificate, SchemaHelper schemaManager, UfIBGE uf) :
+        private NfeStatusServico(X509Certificate2 certificate, SchemaHelper schemaManager, UfIBGE uf, TipoAmbiente ambiente = TipoAmbiente.Producao) :
             base(certificate, schemaManager)
         {
             this.uf = uf;
-            webServiceUri = NfeStatusServicoURIs.ServiceURI(uf);
+            tipoAmbiente = ambiente;
+            webServiceUri = NfeStatusServicoURIs.ServiceURI(uf, ambiente);
         }
 
 
@@ -51,6 +55,9 @@ namespace JpManifestoNFE.StatusServico
         {
             return new NfeStatusServico(certificate, schemaManager, uf);
         }
+
+        public static INfeStatusServico GetNfeStatusServico(X509Certificate2 certificate, SchemaHelper schemaManager, UfIBGE uf, TipoAmbiente ambiente)
+            => new NfeStatusServico(certificate, schemaManager, uf, ambiente);
 
 
         /// <summary>
@@ -65,7 +72,7 @@ namespace JpManifestoNFE.StatusServico
 
             TConsStatServ consStatServ = new TConsStatServ();
             consStatServ.cUF = EnumsHelper.GetTCodUfIBGEFromUF(uf);
-            consStatServ.tpAmb = EnumsHelper.GetTipoAmbienteAsTAmb(TipoAmbiente.Producao);
+            consStatServ.tpAmb = EnumsHelper.GetTipoAmbienteAsTAmb(tipoAmbiente);
             consStatServ.versao = VERSAO_SERVICO;
             consStatServ.xServ = TConsStatServXServ.STATUS;
 
@@ -76,13 +83,15 @@ namespace JpManifestoNFE.StatusServico
             {
                 var requestData = await client.nfeStatusServicoNFAsync(xmlDoc);
                 var result = XmlHelper.ParseFromXml<TRetConsStatServ>(requestData.nfeResultMsg, typeof(TRetConsStatServ));
-                SefazReturnCodeHelper.ThrowIfCodeIsError(int.Parse(result.cStat), expectedReturnCode);
+                if (int.Parse(result.cStat) != expectedReturnCode)
+                    throw new SefazReturnException(int.Parse(result.cStat), result.xMotivo);
                 return result;
             }
             catch (EndpointNotFoundException)
             {
                 throw new HttpRequestException(ErrorMsgs.SEFAZ_CONN_ERROR);
             }
+            finally { CloseClient(client); }
         }
     }
 }

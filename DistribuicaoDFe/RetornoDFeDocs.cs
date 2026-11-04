@@ -1,4 +1,4 @@
-﻿using SefazSchemasClasses;
+using SefazSchemasClasses;
 
 namespace JpManifestoNFE.DistribuicaoDFe
 {
@@ -9,13 +9,14 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// </summary>
         private List<DFeDoc> dfeDocs;
 
-        private int ultimoNSU;
+        private long ultimoNSU;
 
-        private int maxNSU;
+        private long maxNSU;
+        private retDistDFeInt? respostaOriginal;
 
         private List<retDistDFeIntLoteDistDFeIntDocZip> dfeDocZips;
 
-        private RetornoDFeDocs(List<DFeDoc> dfeDocs, int ultimoNSU, int maxNSU)
+        private RetornoDFeDocs(List<DFeDoc> dfeDocs, long ultimoNSU, long maxNSU)
         {
             this.dfeDocs = dfeDocs;
             this.ultimoNSU = ultimoNSU;
@@ -30,20 +31,16 @@ namespace JpManifestoNFE.DistribuicaoDFe
         /// <returns></returns>
         public static IRetornoDFeDocs ProcessRetornoDFeDocs(retDistDFeInt retornoDistDFe)
         {
+            ArgumentNullException.ThrowIfNull(retornoDistDFe);
             var docs = GetRetornoDocs(retornoDistDFe);
-
-            if (retornoDistDFe.maxNSU == null)
-                retornoDistDFe.maxNSU = "0";
-            if (retornoDistDFe.ultNSU == null)
-                retornoDistDFe.ultNSU = "0";
 
             var docZips = retornoDistDFe.loteDistDFeInt == null ?
                 new List<retDistDFeIntLoteDistDFeIntDocZip>() :
-                retornoDistDFe.loteDistDFeInt.docZip.ToList();
+                retornoDistDFe.loteDistDFeInt.docZip?.ToList() ?? new();
 
-            return new RetornoDFeDocs(docs, int.Parse(retornoDistDFe.ultNSU),
-                int.Parse(retornoDistDFe.maxNSU))
-            { dfeDocZips = docZips };
+            return new RetornoDFeDocs(docs, Nsu.ParseOptional(retornoDistDFe.ultNSU) ?? 0,
+                Nsu.ParseOptional(retornoDistDFe.maxNSU) ?? 0)
+            { dfeDocZips = docZips, respostaOriginal = retornoDistDFe };
         }
 
 
@@ -61,28 +58,28 @@ namespace JpManifestoNFE.DistribuicaoDFe
 
             foreach (var xmlDocZip in retornoDFe.loteDistDFeInt.docZip)
             {
-                if (xmlDocZip.schema.Contains(DFeDocResumoNFe.SCHEMA_NAME))
+                try
                 {
-                    docsExtraidos.Add(DFeDocResumoNFe.GetInstance(xmlDocZip));
+                    if (xmlDocZip == null || string.IsNullOrWhiteSpace(xmlDocZip.schema))
+                        throw new InvalidDataException("Documento retornado sem schema.");
+                    DFeDoc doc = xmlDocZip.schema switch
+                    {
+                        "resNFe_v1.00.xsd" or "resNFe_v1.01.xsd" => DFeDocResumoNFe.GetInstance(xmlDocZip),
+                        "resEvento_v1.00.xsd" or "resEvento_v1.01.xsd" => DFeDocResumoEvento.GetInstance(xmlDocZip),
+                        "procNFe_v4.00.xsd" => DFeDocProcNFe.GetInstance(xmlDocZip),
+                        "procEventoNFe_v1.00.xsd" => DFeProcEventoNFe.GetInstance(xmlDocZip),
+                        _ => DFeDocDesc.GetInstance(xmlDocZip)
+                    };
+                    doc.DocumentoOriginal = xmlDocZip;
+                    docsExtraidos.Add(doc);
                 }
-                else if (xmlDocZip.schema.Contains(DFeDocResumoEvento.SCHEMA_NAME))
+                catch (Exception ex) when (ex is InvalidOperationException or IOException or InvalidDataException or FormatException or ArgumentException or System.Xml.XmlException)
                 {
-                    docsExtraidos.Add(DFeDocResumoEvento.GetInstance(xmlDocZip));
-                }
-                /*O nome procNFe existe apenas no arquivo schema, o tipo da NFe processada é TProtNFe
-                 o motivo de tal divergência é desconhecido, talvez seja resolvido em uma futura atualização
-                dos web services.*/
-                else if (xmlDocZip.schema.Contains(DFeDocProcNFe.SCHEMA_NAME))
-                {
-                    docsExtraidos.Add(DFeDocProcNFe.GetInstance(xmlDocZip));
-                }
-                else if (xmlDocZip.schema.Contains(DFeProcEventoNFe.SCHEMA_NAME))
-                {
-                    docsExtraidos.Add(DFeProcEventoNFe.GetInstance(xmlDocZip));
-                }
-                else
-                {
-                    docsExtraidos.Add(DFeDocDesc.GetInstance(xmlDocZip));
+                    docsExtraidos.Add(new DFeProcessingFailure
+                    {
+                        DocumentoOriginal = xmlDocZip, Schema = xmlDocZip?.schema ?? "",
+                        Message = ex.GetBaseException().Message
+                    });
                 }
             }
 
@@ -114,7 +111,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
 
         public int GetMaxNSU()
         {
-            return maxNSU;
+            return checked((int)maxNSU);
         }
 
         public List<DFeDocProcNFe> GetNFesProcessadas()
@@ -172,7 +169,12 @@ namespace JpManifestoNFE.DistribuicaoDFe
 
         public int GetUltimoNSU()
         {
-            return ultimoNSU;
+            return checked((int)ultimoNSU);
         }
+
+        public long GetUltimoNSU64() => ultimoNSU;
+        public long GetMaxNSU64() => maxNSU;
+        public retDistDFeInt? GetRespostaOriginal() => respostaOriginal;
+        public IReadOnlyList<DFeProcessingFailure> GetProcessingFailures() => dfeDocs.OfType<DFeProcessingFailure>().ToArray();
     }
 }

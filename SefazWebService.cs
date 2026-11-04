@@ -9,6 +9,12 @@ namespace JpManifestoNFE
 {
     public class SefazWebService
     {
+        protected static void CloseClient(ICommunicationObject client)
+        {
+            try { if (client.State == CommunicationState.Faulted) client.Abort(); else client.Close(); }
+            catch (CommunicationException) { client.Abort(); }
+            catch (TimeoutException) { client.Abort(); }
+        }
         protected readonly SchemaHelper schemaManager;
 
         /// <summary>
@@ -58,7 +64,8 @@ namespace JpManifestoNFE
             como o de Distribuição de DFe, que pode conter um grande número de caracteres dependendo do tipo de pesquisa feita,
             por isso, foi atríbuido o dobro do valor padrão. 
             */
-            basicBinding.MaxReceivedMessageSize *= 10;
+            basicBinding.MaxReceivedMessageSize = 32 * 1024 * 1024;
+            basicBinding.MaxBufferSize = 32 * 1024 * 1024;
 
 
             //webServiceBinding é uma bind customizada para utilizar o Soap 1.2 ao invés do Soap 1.1 que é padrão do HttpBinding
@@ -73,6 +80,8 @@ namespace JpManifestoNFE
             };
 
             webServiceBinding.Elements[0] = textBindingElement;
+            textBindingElement.ReaderQuotas.MaxStringContentLength = 32 * 1024 * 1024;
+            textBindingElement.ReaderQuotas.MaxArrayLength = 32 * 1024 * 1024;
 
             return webServiceBinding;
         }

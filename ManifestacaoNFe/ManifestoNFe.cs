@@ -13,7 +13,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
 
         private const string VERSAO_EVENTOS = "1.00";
 
-        private const string SEQ_EVENTO = "1";
+        public int Sequencia { get; }
 
         /// <summary>
         /// Tipo de ambiente da manifestação;
@@ -23,7 +23,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
         /// <summary>
         /// Identificação única do evento;
         /// </summary>
-        public string IdEvento { get => $"ID{((int)TipoEvento)}{ChaveNFe}0{SEQ_EVENTO}"; }
+        public string IdEvento { get => $"ID{((int)TipoEvento)}{ChaveNFe}{Sequencia:D2}"; }
 
 
         /// <summary>
@@ -37,7 +37,9 @@ namespace JpManifestoNFE.ManifestacaoNFe
             }
             set
             {
-                justificativaEvento = value.Length >= 255 ? value.Substring(0, 255) : value;
+                if (value == null || value.Length is < 15 or > 255)
+                    throw new ArgumentException("A justificativa deve conter entre 15 e 255 caracteres.");
+                justificativaEvento = value;
             }
         }
         private string justificativaEvento;
@@ -56,7 +58,14 @@ namespace JpManifestoNFE.ManifestacaoNFe
         /// <param name="chaveNFe"></param>
         /// <param name="documentoCliente">Documento do cliente (CPF/CNPJ), é necessário ser idêntico ao do certificado digital;</param>
         public ManifestoNFe(TpEvento tipoEvento, string chaveNFe, string documentoCliente)
+            : this(tipoEvento, chaveNFe, documentoCliente, 1) { }
+
+        public ManifestoNFe(TpEvento tipoEvento, string chaveNFe, string documentoCliente, int sequencia)
         {
+            if (!Enum.IsDefined(tipoEvento)) throw new ArgumentOutOfRangeException(nameof(tipoEvento));
+            if (sequencia < 1 || sequencia > (tipoEvento == TpEvento.Op_Ciencia ? 1 : 2))
+                throw new ArgumentOutOfRangeException(nameof(sequencia));
+            Sequencia = sequencia;
             TipoEvento = tipoEvento;
             ChaveNFe = chaveNFe;
             DocCliente = documentoCliente;
@@ -66,6 +75,11 @@ namespace JpManifestoNFE.ManifestacaoNFe
 
         internal TEvento_confRecebto_v1_00 GetEventoManifesto()
         {
+            if (!ValidacaoTipos.ValidateChaveNFe(ChaveNFe)) throw new FormatException("Chave da NF-e inválida.");
+            if (!ValidacaoTipos.ValidateCnpj(DocCliente) && !ValidacaoTipos.ValidateCpf(DocCliente))
+                throw new FormatException("Informe CPF ou CNPJ sem pontuação.");
+            if (TipoEvento == TpEvento.Op_Nao_Realizada && string.IsNullOrWhiteSpace(JustificativaEvento))
+                throw new ArgumentException("Informe a justificativa da operação não realizada.");
             var evento = new TEvento_confRecebto_v1_00();
             var infoEvento = new TEventoInfEvento_confRecebto_v1_00();
 
@@ -74,7 +88,7 @@ namespace JpManifestoNFE.ManifestacaoNFe
             infoEvento.tpAmb = TipoAmb;
             infoEvento.tpEvento = ManifestacaoEnumHelper.GetCodigoEvento(TipoEvento);
             infoEvento.verEvento = VERSAO_EVENTOS;
-            infoEvento.nSeqEvento = SEQ_EVENTO;
+            infoEvento.nSeqEvento = Sequencia.ToString(System.Globalization.CultureInfo.InvariantCulture);
             infoEvento.dhEvento = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:sszzz");
             infoEvento.Id = IdEvento;
             infoEvento.ItemElementName = ValidacaoTipos.ValidateCnpj(DocCliente) ? TipoDoc.CNPJ : TipoDoc.CPF;

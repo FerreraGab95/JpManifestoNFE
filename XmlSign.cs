@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
@@ -76,11 +76,8 @@ namespace JpManifestoNFE
             reference.Uri = referenceURI;
 
             //Os Xmls enviados para a SEFAZ requerem estes dois Transforms, listados no schema xmldsig;
-            XmlDsigEnvelopedSignatureTransform env1 = new XmlDsigEnvelopedSignatureTransform();
-            env1.Algorithm = SignedXml.XmlDsigC14NTransformUrl;
-
-            XmlDsigEnvelopedSignatureTransform env2 = new XmlDsigEnvelopedSignatureTransform();
-            env2.Algorithm = SignedXml.XmlDsigEnvelopedSignatureTransformUrl;
+            var env1 = new XmlDsigEnvelopedSignatureTransform();
+            var env2 = new XmlDsigC14NTransform();
 
             reference.AddTransform(env1);
             reference.AddTransform(env2);
@@ -130,7 +127,7 @@ namespace JpManifestoNFE
             SignedXml signedXml = new SignedXml(xmlElement);
 
             // Add the key to the SignedXml document.
-            signedXml.SigningKey = clientCertificate.PrivateKey;
+            signedXml.SigningKey = clientCertificate.GetRSAPrivateKey();
 
             //Método de assinatura;
             signedXml.SignedInfo.SignatureMethod = SignedXml.XmlDsigRSASHA1Url;
@@ -144,11 +141,8 @@ namespace JpManifestoNFE
             reference.Uri = referenceURI;
 
             //Os Xmls enviados para a SEFAZ requerem estes dois Transforms, listados no schema xmldsig;
-            XmlDsigEnvelopedSignatureTransform env1 = new XmlDsigEnvelopedSignatureTransform();
-            env1.Algorithm = SignedXml.XmlDsigC14NTransformUrl;
-
-            XmlDsigEnvelopedSignatureTransform env2 = new XmlDsigEnvelopedSignatureTransform();
-            env2.Algorithm = SignedXml.XmlDsigEnvelopedSignatureTransformUrl;
+            var env1 = new XmlDsigEnvelopedSignatureTransform();
+            var env2 = new XmlDsigC14NTransform();
 
             reference.AddTransform(env1);
             reference.AddTransform(env2);
@@ -169,7 +163,7 @@ namespace JpManifestoNFE
             // Compute the signature.
             signedXml.ComputeSignature();
 
-            if (!signedXml.CheckSignature(clientCertificate, false))
+            if (!signedXml.CheckSignature(clientCertificate, true))
             {
                 throw new CryptographicException("A assinatura do documento é inválida");
             }
@@ -220,7 +214,7 @@ namespace JpManifestoNFE
             signedXml.LoadXml((XmlElement)nodeList[0]);
 
             // Check the signature and return the result.
-            return signedXml.CheckSignature(clientCertificate.PrivateKey);
+            return signedXml.CheckSignature(clientCertificate.GetRSAPublicKey());
         }
     }
 }

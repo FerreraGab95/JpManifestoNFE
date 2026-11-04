@@ -1,54 +1,44 @@
-﻿using System.IO.Compression;
+using System.Collections.Concurrent;
+using System.IO.Compression;
+using System.Xml;
 using System.Xml.Serialization;
-
-namespace JpManifestoNFE.DistribuicaoDFe
+namespace JpManifestoNFE.DistribuicaoDFe;
+internal class DFeDocStreamHelper
 {
-    internal class DFeDocStreamHelper
+    private static readonly ConcurrentDictionary<Type, XmlSerializer> Serializers = new();
+    internal static Stream ExtractDocXmlContent(byte[] docBuffer)
+        => new LimitedReadStream(new GZipStream(new MemoryStream(docBuffer, false), CompressionMode.Decompress));
+    internal static object ParseXmlContentToObject(Type schemaType, Stream docStream, int nsu = 0)
     {
-        /// <summary>
-        /// Retorna um stream com o conteúdo do documento XMl descompactado;
-        /// </summary>
-        /// <param name="docBuffer"></param>
-        /// <returns></returns>
-        internal static Stream ExtractDocXmlContent(byte[] docBuffer)
+        if (schemaType == typeof(object))
         {
-            var resultMemoryStream = new MemoryStream();
-
-            using (Stream readMemoryStream = new MemoryStream(docBuffer))
-            using (GZipStream zipStream = new GZipStream(readMemoryStream, CompressionMode.Decompress, false))
-            {
-                //Grava o conteúdo descompactado no stream de resultado;
-                zipStream.CopyTo(resultMemoryStream);
-
-                //Reinicia o stream de resultado para a posição inicial;
-                resultMemoryStream.Seek(0, SeekOrigin.Begin);
-            }
-
-            return resultMemoryStream;
+            using var text = new StreamReader(docStream);
+            return text.ReadToEnd();
         }
-
-
-        /// <summary>
-        /// Converte o Stream do arquivo XML para a instância do documento;
-        /// </summary>
-        /// <param name="schemaType"></param>
-        /// <param name="docStream"></param>
-        /// <returns></returns>
-        internal static object ParseXmlContentToObject(Type schemaType, Stream docStream, int nsu = 0)
+        using var reader = XmlReader.Create(docStream, new XmlReaderSettings
+        { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersInDocument = 32L * 1024 * 1024 });
+        return Serializers.GetOrAdd(schemaType, t => new XmlSerializer(t, SefazWebService.DEFAULT_NAMESPACE)).Deserialize(reader)
+            ?? throw new InvalidDataException("Documento XML vazio.");
+    }
+    private sealed class LimitedReadStream(Stream input) : Stream
+    {
+        private long consumed;
+        public override int Read(byte[] buffer, int offset, int count)
         {
-
-            if (schemaType != typeof(object))
-            {
-                var xmlSerializer = new XmlSerializer(schemaType, SefazWebService.DEFAULT_NAMESPACE);
-                return xmlSerializer.Deserialize(docStream);
-            }
-            else
-            {   //Caso o XML seja de um schema desconhecido, o seu conteúdo será lido como uma string;
-                using (StreamReader reader = new StreamReader(docStream))
-                {
-                    return reader.ReadToEnd();
-                }
-            }
+            var read = input.Read(buffer, offset, count);
+            consumed += read;
+            if (consumed > 32L * 1024 * 1024) throw new InvalidDataException("Documento descompactado excede 32 MB.");
+            return read;
         }
+        protected override void Dispose(bool disposing) { if (disposing) input.Dispose(); base.Dispose(disposing); }
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => consumed; set => throw new NotSupportedException(); }
+        public override void Flush() { }
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 }

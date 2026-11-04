@@ -5,6 +5,15 @@ namespace JpManifestoNFE
     public class SefazReturnException : Exception
     {
         public int ExceptionCode { get; set; }
+        public string? MotivoOficial { get; }
+        public SefazSchemasClasses.retDistDFeInt? RespostaDistribuicao { get; }
+
+        public SefazReturnException(SefazSchemasClasses.retDistDFeInt resposta)
+            : this(int.Parse(resposta.cStat), resposta.xMotivo)
+        {
+            MotivoOficial = resposta.xMotivo;
+            RespostaDistribuicao = resposta;
+        }
 
         public SefazReturnException()
         {

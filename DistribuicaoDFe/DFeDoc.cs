@@ -5,7 +5,11 @@
         /// <summary>
         /// Número sequencial único;
         /// </summary>
-        public long NSU { get; internal set; }
+        public long NSU { get => NumeroNSU ?? 0; internal set => NumeroNSU = value; }
+
+        /// <summary>NSU ausente continua ausente; NSU é mantido para consumidores antigos.</summary>
+        public long? NumeroNSU { get; internal set; }
+        public SefazSchemasClasses.retDistDFeIntLoteDistDFeIntDocZip? DocumentoOriginal { get; internal set; }
 
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿using SefazSchemasClasses;
+using SefazSchemasClasses;
 
 namespace JpManifestoNFE.DistribuicaoDFe
 {
@@ -30,7 +30,7 @@ namespace JpManifestoNFE.DistribuicaoDFe
         public static DFeDocDesc GetInstance(retDistDFeIntLoteDistDFeIntDocZip xmlDocZip)
         {
             var docDesc = new DFeDocDesc();
-            docDesc.NSU = long.Parse(xmlDocZip.NSU);
+            docDesc.NumeroNSU = Nsu.ParseOptional(xmlDocZip.NSU);
 
             using (var docStream = DFeDocStreamHelper.ExtractDocXmlContent(xmlDocZip.Value))
             {

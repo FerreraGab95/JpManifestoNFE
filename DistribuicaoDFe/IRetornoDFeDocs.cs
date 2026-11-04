@@ -4,6 +4,10 @@ namespace JpManifestoNFE.DistribuicaoDFe
 {
     public interface IRetornoDFeDocs
     {
+        long GetUltimoNSU64() => GetUltimoNSU();
+        long GetMaxNSU64() => GetMaxNSU();
+        IReadOnlyList<DFeProcessingFailure> GetProcessingFailures() => Array.Empty<DFeProcessingFailure>();
+        retDistDFeInt? GetRespostaOriginal() => null;
 
         /// <summary>
         /// Retorna todos os documentos processados, obtidos da pesquisa;

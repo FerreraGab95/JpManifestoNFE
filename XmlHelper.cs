@@ -1,96 +1,25 @@
-﻿using System.Text;
+using System.Collections.Concurrent;
 using System.Xml;
 using System.Xml.Serialization;
-
-namespace JpManifestoNFE
+namespace JpManifestoNFE;
+public class XmlHelper
 {
-    public class XmlHelper
+    private static readonly ConcurrentDictionary<Type, XmlSerializer> Serializers = new();
+    private static XmlSerializer Serializer(Type type) => Serializers.GetOrAdd(type, t => new XmlSerializer(t));
+    public static XmlDocument ParseToXmlDocument(object value, Type type, string defaultNamespace)
     {
-        /// <summary>
-        /// Serializa um objeto de tipo presente em XsdClasses para um XmlDocument;
-        /// </summary>
-        /// <param name="toXmlDoc"></param>
-        /// <param name="objType"></param>
-        /// <returns></returns>
-        public static XmlDocument ParseToXmlDocument(object toXmlDoc, Type objType, string defaultNamespace)
-        {
-            var ns = new XmlSerializerNamespaces();
-            ns.Add("", "");
-
-            XmlSerializer xmlSerializer = new XmlSerializer(objType);//, defaultNamespace);
-
-            var defaultEncoding = Encoding.UTF8;
-
-            var writerSettings = new XmlWriterSettings();
-            writerSettings.Encoding = defaultEncoding;
-
-            XmlDocument doc = new XmlDocument();
-
-            using (var mStream = new MemoryStream())
-            {
-                using (var reader = new StreamReader(mStream))
-                {
-                    using (var xmlWriter = XmlWriter.Create(mStream, writerSettings))
-                    {
-
-                        xmlSerializer.Serialize(xmlWriter, toXmlDoc, ns);
-                        mStream.Seek(0, SeekOrigin.Begin);
-
-                        string xml = reader.ReadToEnd();
-                        doc.PreserveWhitespace = false;
-                        /*A deserilização dos objetos diretamente em xml, gerava alguns namespaces indevidos,
-                        que ocasionam erros ao assinar os documentos (quando requerido) ex: Asinatura difere do calculado.
-                        Por isso, ao serializar o documento, é removido todos os namespaces, porém, ao remove-los todos os 
-                        outros namespaces, e o nome das propriedades são inseridos depois de q1: ou :q1, sendo então necessário
-                        remove-los manualmente da string representando o arquivo XML.*/
-                        doc.LoadXml(xml.Replace(":q1", "").Replace("q1:", ""));
-                    }
-                }
-            }
-
-            return doc;
-        }
-
-
-
-        /// <summary>
-        /// Deserializa um nó Xml para uma instância de um objeto de tipo especificado em SefazSchemasClasses;
-        /// </summary>
-        /// <param name="xmlNode"></param>
-        /// <param name="typeToConvert"></param>
-        /// <returns></returns>
-        public static T ParseFromXml<T>(XmlNode xmlNode, Type typeToConvert)
-        {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeToConvert);
-
-            XmlDocument doc = new XmlDocument();
-            XmlNode toImport = doc.ImportNode(xmlNode, true);
-            doc.AppendChild(toImport);
-
-            using (var sReader = new StringReader(xmlNode.OuterXml))
-            {
-                var des = xmlSerializer.Deserialize(sReader);
-                return (T)des;
-            }
-        }
-
-
-
-        /// <summary>
-        /// Deserializa um documento Xml para uma instância de um objeto de tipo especificado em SefazSchemasClasses;
-        /// </summary>
-        /// <param name="xmlNode"></param>
-        /// <param name="typeToConvert"></param>
-        /// <returns></returns>
-        public static T ParseFromXml<T>(XmlDocument xmlDoc, Type typeToConvert)
-        {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeToConvert);
-
-            using (var sReader = new StringReader(xmlDoc.OuterXml))
-            {
-                var des = xmlSerializer.Deserialize(sReader);
-                return (T)des;
-            }
-        }
+        var namespaces = new XmlSerializerNamespaces();
+        namespaces.Add("", defaultNamespace);
+        var document = new XmlDocument { XmlResolver = null };
+        using (var writer = document.CreateNavigator()!.AppendChild())
+            Serializer(type).Serialize(writer, value, namespaces);
+        return document;
     }
+    public static T ParseFromXml<T>(XmlNode node, Type type)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        using var reader = new XmlNodeReader(node);
+        return (T)(Serializer(type).Deserialize(reader) ?? throw new InvalidDataException("XML de retorno vazio."));
+    }
+    public static T ParseFromXml<T>(XmlDocument document, Type type) => ParseFromXml<T>((XmlNode)document, type);
 }

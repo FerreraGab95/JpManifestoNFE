@@ -4,6 +4,8 @@ namespace JpManifestoNFE.DistribuicaoDFe
 {
     public interface IDistribuicaoDFe
     {
+        Task<retDistDFeInt> ConsultaNSU(long nsu) => ConsultaNSU(checked((int)nsu));
+        Task<retDistDFeInt> ConsultaUltimoNSU(long ultNSU) => ConsultaUltimoNSU(checked((int)ultNSU));
         /// <summary>
         /// Retorna o documento que possui o NSU informado;
         /// </summary>

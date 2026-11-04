@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace JpManifestoNFE
 {
@@ -10,7 +10,7 @@ namespace JpManifestoNFE
 
         private static string NFE_PATTERN = $"^\\d{{{NFE_DIGITOS}}}$";
         private static string CPF_PATTERN = $"^\\d{{{CPF_DIGITOS}}}$";
-        private static string CNPJ_PATTERN = $"^\\d{{{CNPJ_DIGITOS}}}$";
+        private static string CNPJ_PATTERN = $"^[A-Z0-9]{{12}}[0-9]{{2}}$";
 
         public static bool ValidateChaveNFe(string chaveNFe)
         {
