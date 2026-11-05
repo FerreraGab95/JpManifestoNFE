@@ -136,7 +136,11 @@ namespace JpManifestoNFE.DistribuicaoDFe
 
         private async Task<retDistDFeInt> RunClient(XmlDocument distDoc)
         {
-            var client = new NFeDistribuicaoDFeSoapClient(webServiceBinding, new EndpointAddress(WebServiceUri));
+            var binding = webServiceBinding;
+            binding.OpenTimeout = TimeSpan.FromSeconds(30);
+            binding.SendTimeout = TimeSpan.FromMinutes(2);
+            binding.CloseTimeout = TimeSpan.FromSeconds(30);
+            var client = new NFeDistribuicaoDFeSoapClient(binding, new EndpointAddress(WebServiceUri));
             client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
 
             try
@@ -148,6 +152,11 @@ namespace JpManifestoNFE.DistribuicaoDFe
                     throw new SefazReturnException(result);
 
                 return result;
+            }
+            catch (TimeoutException)
+            {
+                client.Abort();
+                throw;
             }
             catch (EndpointNotFoundException)
             {
