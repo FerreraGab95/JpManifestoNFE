@@ -66,10 +66,6 @@ namespace JpManifestoNFE.StatusServico
         /// <returns></returns>
         public async Task<TRetConsStatServ> GetStatusService()
         {
-            var client = new NFeStatusServico4SoapClient(webServiceBinding, new EndpointAddress(webServiceUri));
-
-            client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
-
             TConsStatServ consStatServ = new TConsStatServ();
             consStatServ.cUF = EnumsHelper.GetTCodUfIBGEFromUF(uf);
             consStatServ.tpAmb = EnumsHelper.GetTipoAmbienteAsTAmb(tipoAmbiente);
@@ -79,6 +75,13 @@ namespace JpManifestoNFE.StatusServico
             var xmlDoc = XmlHelper.ParseToXmlDocument(consStatServ, typeof(TConsStatServ), DEFAULT_NAMESPACE);
             ValidateXmlFromSchemas(xmlDoc, ServiceSchemas);
 
+            var binding = webServiceBinding;
+            binding.OpenTimeout = TimeSpan.FromSeconds(10);
+            binding.SendTimeout = TimeSpan.FromSeconds(15);
+            binding.CloseTimeout = TimeSpan.FromSeconds(5);
+            var client = new NFeStatusServico4SoapClient(binding, new EndpointAddress(webServiceUri));
+            client.ClientCredentials.ClientCertificate.Certificate = clientCertificate;
+
             try
             {
                 var requestData = await client.nfeStatusServicoNFAsync(xmlDoc);
@@ -86,6 +89,11 @@ namespace JpManifestoNFE.StatusServico
                 if (int.Parse(result.cStat) != expectedReturnCode)
                     throw new SefazReturnException(int.Parse(result.cStat), result.xMotivo);
                 return result;
+            }
+            catch (TimeoutException)
+            {
+                client.Abort();
+                throw;
             }
             catch (EndpointNotFoundException)
             {
